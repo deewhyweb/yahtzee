@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yahtzee Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f8ff;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        .game-info {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 18px;
+            color: #34495e;
+        }
+
+        .dice-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .die {
+            width: 80px;
+            height: 80px;
+            border: 3px solid #3498db;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: bold;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .die:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .die.held {
+            background: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+        }
+
+        .die.suggested {
+            background: #f39c12;
+            color: white;
+            border-color: #e67e22;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(243, 156, 18, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(243, 156, 18, 0); }
+        }
+
+        .die.rolling {
+            animation: roll 0.8s ease-in-out;
+        }
+
+        @keyframes roll {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(90deg) scale(1.1); }
+            50% { transform: rotate(180deg) scale(0.9); }
+            75% { transform: rotate(270deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .die.shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+            20%, 40%, 60%, 80% { transform: translateX(3px); }
+        }
+
+        .controls {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: background 0.3s ease;
+        }
+
+        button:hover:not(:disabled) {
+            background: #2980b9;
+        }
+
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .instructions {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .final-result {
+            background: #d5f4e6;
+            border: 2px solid #27ae60;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .final-result h3 {
+            color: #27ae60;
+            margin-top: 0;
+        }
+
+        .dice-values {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        .hints {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .hints h4 {
+            color: #856404;
+            margin-top: 0;
+        }
+
+        .hint-suggestion {
+            color: #495057;
+            font-weight: bold;
+        }
+
+        .fireworks {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .firework {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: firework 2s ease-out forwards;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        @keyframes firework {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+                box-shadow: 0 0 20px currentColor;
+            }
+            50% {
+                transform: translate(calc(var(--dx) * 0.7), calc(var(--dy) * 0.7)) scale(1.5);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(var(--dx), var(--dy)) scale(0);
+                opacity: 0;
+                box-shadow: 0 0 0px currentColor;
+            }
+        }
+
+        .firework:nth-child(1) { background: #ff6b6b; color: #ff6b6b; --dx: 200px; --dy: -300px; animation-delay: 0s; }
+        .firework:nth-child(2) { background: #4ecdc4; color: #4ecdc4; --dx: -250px; --dy: -200px; animation-delay: 0.05s; }
+        .firework:nth-child(3) { background: #45b7d1; color: #45b7d1; --dx: 180px; --dy: -400px; animation-delay: 0.1s; }
+        .firework:nth-child(4) { background: #f9ca24; color: #f9ca24; --dx: -180px; --dy: -350px; animation-delay: 0.15s; }
+        .firework:nth-child(5) { background: #f0932b; color: #f0932b; --dx: 300px; --dy: -250px; animation-delay: 0.2s; }
+        .firework:nth-child(6) { background: #eb4d4b; color: #eb4d4b; --dx: -300px; --dy: -320px; animation-delay: 0.25s; }
+        .firework:nth-child(7) { background: #6c5ce7; color: #6c5ce7; --dx: 250px; --dy: -180px; animation-delay: 0.3s; }
+        .firework:nth-child(8) { background: #a29bfe; color: #a29bfe; --dx: -200px; --dy: -450px; animation-delay: 0.35s; }
+        .firework:nth-child(9) { background: #fd79a8; color: #fd79a8; --dx: 150px; --dy: -280px; animation-delay: 0.4s; }
+        .firework:nth-child(10) { background: #00b894; color: #00b894; --dx: -150px; --dy: -200px; animation-delay: 0.45s; }
+        .firework:nth-child(11) { background: #ff7675; color: #ff7675; --dx: 350px; --dy: -150px; animation-delay: 0.5s; }
+        .firework:nth-child(12) { background: #74b9ff; color: #74b9ff; --dx: -350px; --dy: -250px; animation-delay: 0.55s; }
+        .firework:nth-child(13) { background: #55a3ff; color: #55a3ff; --dx: 120px; --dy: -500px; animation-delay: 0.6s; }
+        .firework:nth-child(14) { background: #fd79a8; color: #fd79a8; --dx: -120px; --dy: -180px; animation-delay: 0.65s; }
+        .firework:nth-child(15) { background: #fdcb6e; color: #fdcb6e; --dx: 280px; --dy: -380px; animation-delay: 0.7s; }
+        .firework:nth-child(16) { background: #e17055; color: #e17055; --dx: -280px; --dy: -420px; animation-delay: 0.75s; }
+        .firework:nth-child(17) { background: #00b894; color: #00b894; --dx: 400px; --dy: -300px; animation-delay: 0.8s; }
+        .firework:nth-child(18) { background: #00cec9; color: #00cec9; --dx: -400px; --dy: -150px; animation-delay: 0.85s; }
+        .firework:nth-child(19) { background: #6c5ce7; color: #6c5ce7; --dx: 50px; --dy: -600px; animation-delay: 0.9s; }
+        .firework:nth-child(20) { background: #a29bfe; color: #a29bfe; --dx: -50px; --dy: -100px; animation-delay: 0.95s; }
+
+        .yahtzee-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            font-weight: bold;
+            color: #f39c12;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 1001;
+            animation: yahtzee-bounce 2s ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes yahtzee-bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translate(-50%, -50%) translateY(0); }
+            40% { transform: translate(-50%, -50%) translateY(-30px); }
+            60% { transform: translate(-50%, -50%) translateY(-15px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🎲 Yahtzee Game 🎲</h1>
+        
+        <div class="instructions">
+            <strong>How to play:</strong>
+            <ul>
+                <li>Click "Roll Dice" to start</li>
+                <li>Click on dice to hold them (they'll turn red)</li>
+                <li>You get 3 rolls per round</li>
+                <li>Try to get the best combination!</li>
+            </ul>
+        </div>
+
+        <div class="game-info">
+            <div id="turn-info">Click "New Game" to start!</div>
+        </div>
+
+        <div class="dice-container" id="dice-container">
+            <div class="die" id="die-0">?</div>
+            <div class="die" id="die-1">?</div>
+            <div class="die" id="die-2">?</div>
+            <div class="die" id="die-3">?</div>
+            <div class="die" id="die-4">?</div>
+        </div>
+
+        <div class="controls">
+            <button id="roll-btn" onclick="rollDice()">Roll Dice</button>
+            <button id="new-game-btn" onclick="newGame()">New Game</button>
+        </div>
+
+        <div id="hints" class="hints" style="display: none;">
+            <h4>💡 Suggestion</h4>
+            <div id="hint-text" class="hint-suggestion"></div>
+        </div>
+
+        <div id="final-result" class="final-result" style="display: none;">
+            <h3>🎉 Round Complete! 🎉</h3>
+            <div id="final-dice" class="dice-values"></div>
+            <div id="sorted-dice" class="dice-values"></div>
+        </div>
+    </div>
+
+    <script>
+        class YahtzeeGame {
+            constructor() {
+                this.dice = [0, 0, 0, 0, 0];
+                this.heldDice = [false, false, false, false, false];
+                this.turn = 0;
+                this.maxTurns = 3;
+                this.gameStarted = false;
+                this.suggestedDice = [false, false, false, false, false];
+                this.diceEmoji = ['', '🎲', '🎲', '🎲', '🎲', '🎲', '🎲'];
+            }
+
+            setDiceFace(element, value) {
+                // Simply show the number
+                element.textContent = value;
+            }
+
+            isYahtzee() {
+                const counts = {};
+                this.dice.forEach(die => counts[die] = (counts[die] || 0) + 1);
+                return Object.values(counts).includes(5);
+            }
+
+            forceYahtzee() {
+                // Set all dice to the same value for testing
+                const value = Math.floor(Math.random() * 6) + 1;
+                for (let i = 0; i < 5; i++) {
+                    this.dice[i] = value;
+                    this.setDiceFace(document.getElementById(`die-${i}`), value);
+                }
+                
+                // Trigger fireworks immediately
+                setTimeout(() => {
+                    this.showFireworks();
+                }, 500);
+                
+                console.log('Forced Yahtzee with all', value + 's');
+            }
+
+            showFireworks() {
+                // Create fireworks container
+                const fireworksContainer = document.createElement('div');
+                fireworksContainer.className = 'fireworks';
+                
+                // Create many more firework bursts covering the entire screen
+                const burstPositions = [
+                    {left: 10, top: 20}, {left: 25, top: 30}, {left: 40, top: 15}, 
+                    {left: 55, top: 35}, {left: 70, top: 25}, {left: 85, top: 40},
+                    {left: 15, top: 60}, {left: 30, top: 70}, {left: 45, top: 55}, 
+                    {left: 60, top: 75}, {left: 75, top: 65}, {left: 90, top: 80},
+                    {left: 20, top: 90}, {left: 35, top: 10}, {left: 50, top: 95},
+                    {left: 65, top: 5}, {left: 80, top: 85}, {left: 5, top: 50}
+                ];
+                
+                burstPositions.forEach((pos, burst) => {
+                    setTimeout(() => {
+                        const burstContainer = document.createElement('div');
+                        burstContainer.style.position = 'absolute';
+                        burstContainer.style.left = `${pos.left}%`;
+                        burstContainer.style.top = `${pos.top}%`;
+                        
+                        // Create individual firework particles (20 per burst for more density)
+                        for (let i = 0; i < 20; i++) {
+                            const firework = document.createElement('div');
+                            firework.className = 'firework';
+                            burstContainer.appendChild(firework);
+                        }
+                        
+                        fireworksContainer.appendChild(burstContainer);
+                    }, burst * 100); // Faster bursts for more action
+                });
+                
+                // Create YAHTZEE message
+                const message = document.createElement('div');
+                message.className = 'yahtzee-message';
+                message.textContent = '🎯 YAHTZEE! 🎯';
+                
+                document.body.appendChild(fireworksContainer);
+                document.body.appendChild(message);
+                
+                // Clean up after animation
+                setTimeout(() => {
+                    document.body.removeChild(fireworksContainer);
+                    document.body.removeChild(message);
+                }, 4000); // Longer duration for the spectacular show
+            }
+
+            rollDice() {
+                if (!this.gameStarted) {
+                    this.gameStarted = true;
+                }
+                
+                // Clear previous suggestions when starting a new roll
+                this.suggestedDice = [false, false, false, false, false];
+                
+                // Disable roll button during animation
+                const rollBtn = document.getElementById('roll-btn');
+                rollBtn.disabled = true;
+                rollBtn.textContent = 'Rolling...';
+                
+                const animationDurations = [];
+                let maxDuration = 0;
+                
+                // Start rolling animations for non-held dice with random durations
+                for (let i = 0; i < 5; i++) {
+                    const dieElement = document.getElementById(`die-${i}`);
+                    if (!this.heldDice[i]) {
+                        // Clear suggested class immediately when starting to roll
+                        dieElement.classList.remove('suggested');
+                        
+                        // Random duration between 1500ms and 3000ms
+                        const duration = 1500 + Math.random() * 1500;
+                        animationDurations[i] = duration;
+                        maxDuration = Math.max(maxDuration, duration);
+                        
+                        // Set custom animation duration
+                        dieElement.style.animationDuration = `${duration}ms`;
+                        dieElement.classList.add('rolling');
+                        dieElement.textContent = '🎲';
+                        
+                        // Set individual timeout for each die
+                        setTimeout(() => {
+                            this.dice[i] = Math.floor(Math.random() * 6) + 1;
+                            dieElement.classList.remove('rolling');
+                            dieElement.style.animationDuration = ''; // Reset to default
+                            this.setDiceFace(dieElement, this.dice[i]);
+                        }, duration);
+                        
+                    } else {
+                        dieElement.classList.add('shake');
+                        setTimeout(() => {
+                            dieElement.classList.remove('shake');
+                        }, 500);
+                    }
+                }
+                
+                // After all animations complete, update the game state
+                setTimeout(() => {
+                    this.turn++;
+                    this.updateDisplay();
+                    
+                    // Check for Yahtzee and show fireworks (on any roll)
+                    if (this.isYahtzee()) {
+                        console.log('YAHTZEE detected on turn', this.turn);
+                        setTimeout(() => {
+                            this.showFireworks();
+                        }, 500);
+                    }
+                }, maxDuration + 100);
+            }
+
+            toggleHold(diceIndex) {
+                if (this.gameStarted && this.turn > 0 && this.turn < this.maxTurns) {
+                    this.heldDice[diceIndex] = !this.heldDice[diceIndex];
+                    this.updateDisplay();
+                }
+            }
+
+            analyzeDice() {
+                const counts = {};
+                this.dice.forEach(die => counts[die] = (counts[die] || 0) + 1);
+                
+                const sortedCounts = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+                const maxCount = sortedCounts[0][1];
+                const maxValue = parseInt(sortedCounts[0][0]);
+                
+                // Reset suggestions
+                this.suggestedDice = [false, false, false, false, false];
+                
+                let suggestion = "";
+                
+                // Check for Yahtzee (5 of a kind)
+                if (maxCount === 5) {
+                    suggestion = "🎉 YAHTZEE! Keep all dice!";
+                    this.suggestedDice = [true, true, true, true, true];
+                }
+                // Check for 4 of a kind
+                else if (maxCount === 4) {
+                    suggestion = `Keep all four ${maxValue}s for Four of a Kind!`;
+                    for (let i = 0; i < 5; i++) {
+                        if (this.dice[i] === maxValue) this.suggestedDice[i] = true;
+                    }
+                }
+                // Check for 3 of a kind
+                else if (maxCount === 3) {
+                    suggestion = `Keep the three ${maxValue}s for Three of a Kind!`;
+                    for (let i = 0; i < 5; i++) {
+                        if (this.dice[i] === maxValue) this.suggestedDice[i] = true;
+                    }
+                }
+                // Check for pairs
+                else if (maxCount === 2) {
+                    const pairs = sortedCounts.filter(([value, count]) => count === 2);
+                    if (pairs.length === 2) {
+                        suggestion = "Two Pair! Keep both pairs for Full House potential!";
+                        pairs.forEach(([value]) => {
+                            for (let i = 0; i < 5; i++) {
+                                if (this.dice[i] === parseInt(value)) this.suggestedDice[i] = true;
+                            }
+                        });
+                    } else {
+                        suggestion = `Keep the pair of ${maxValue}s!`;
+                        for (let i = 0; i < 5; i++) {
+                            if (this.dice[i] === maxValue) this.suggestedDice[i] = true;
+                        }
+                    }
+                }
+                // Check for straights
+                else {
+                    const uniqueDice = [...new Set(this.dice)].sort((a, b) => a - b);
+                    let consecutive = 1;
+                    let maxConsecutive = 1;
+                    let straightStart = uniqueDice[0];
+                    
+                    for (let i = 1; i < uniqueDice.length; i++) {
+                        if (uniqueDice[i] === uniqueDice[i-1] + 1) {
+                            consecutive++;
+                            if (consecutive > maxConsecutive) {
+                                maxConsecutive = consecutive;
+                                straightStart = uniqueDice[i - consecutive + 1];
+                            }
+                        } else {
+                            consecutive = 1;
+                        }
+                    }
+                    
+                    if (maxConsecutive >= 4) {
+                        suggestion = maxConsecutive === 5 ? "Large Straight! Keep all!" : "Small Straight potential! Keep the sequence!";
+                        for (let i = 0; i < 5; i++) {
+                            const die = this.dice[i];
+                            if (die >= straightStart && die < straightStart + maxConsecutive) {
+                                this.suggestedDice[i] = true;
+                            }
+                        }
+                    } else if (maxConsecutive === 3) {
+                        suggestion = "Keep the 3-card sequence for straight potential!";
+                        for (let i = 0; i < 5; i++) {
+                            const die = this.dice[i];
+                            if (die >= straightStart && die < straightStart + 3) {
+                                this.suggestedDice[i] = true;
+                            }
+                        }
+                    } else {
+                        // Keep highest dice for chance
+                        const highDice = Math.max(...this.dice);
+                        suggestion = `Keep the ${highDice}s for highest score!`;
+                        for (let i = 0; i < 5; i++) {
+                            if (this.dice[i] === highDice) this.suggestedDice[i] = true;
+                        }
+                    }
+                }
+                
+                return suggestion;
+            }
+
+            calculateYahtzeeScores() {
+                const counts = {};
+                this.dice.forEach(die => counts[die] = (counts[die] || 0) + 1);
+                const sortedCounts = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+                const uniqueDice = [...new Set(this.dice)].sort((a, b) => a - b);
+                
+                const scores = {};
+                
+                // Upper section (ones through sixes)
+                for (let i = 1; i <= 6; i++) {
+                    scores[`${i}s`] = (counts[i] || 0) * i;
+                }
+                
+                // Three of a kind
+                const maxCount = sortedCounts[0][1];
+                if (maxCount >= 3) {
+                    scores['Three of a Kind'] = this.dice.reduce((sum, die) => sum + die, 0);
+                }
+                
+                // Four of a kind
+                if (maxCount >= 4) {
+                    scores['Four of a Kind'] = this.dice.reduce((sum, die) => sum + die, 0);
+                }
+                
+                // Full house
+                const hasThree = sortedCounts.some(([_, count]) => count === 3);
+                const hasTwo = sortedCounts.some(([_, count]) => count === 2);
+                const hasTwoPair = sortedCounts.filter(([_, count]) => count === 2).length === 2;
+                if ((hasThree && hasTwo) || (hasThree && hasTwoPair)) {
+                    scores['Full House'] = 25;
+                }
+                
+                // Small straight
+                const straights = [
+                    [1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6]
+                ];
+                for (let straight of straights) {
+                    if (straight.every(num => uniqueDice.includes(num))) {
+                        scores['Small Straight'] = 30;
+                        break;
+                    }
+                }
+                
+                // Large straight
+                const largeStraights = [
+                    [1, 2, 3, 4, 5], [2, 3, 4, 5, 6]
+                ];
+                for (let straight of largeStraights) {
+                    if (straight.every(num => uniqueDice.includes(num)) && uniqueDice.length === 5) {
+                        scores['Large Straight'] = 40;
+                        break;
+                    }
+                }
+                
+                // Yahtzee
+                if (maxCount === 5) {
+                    scores['Yahtzee'] = 50;
+                }
+                
+                // Chance
+                scores['Chance'] = this.dice.reduce((sum, die) => sum + die, 0);
+                
+                return scores;
+            }
+
+            getBestScore() {
+                const scores = this.calculateYahtzeeScores();
+                const validScores = Object.entries(scores).filter(([_, score]) => score > 0);
+                
+                if (validScores.length === 0) {
+                    return { category: 'Chance', score: scores['Chance'] };
+                }
+                
+                const bestScore = validScores.reduce((best, current) => 
+                    current[1] > best[1] ? current : best
+                );
+                
+                return { category: bestScore[0], score: bestScore[1] };
+            }
+
+            updateDisplay() {
+                // Generate suggestions first if we have dice rolled
+                let suggestion = "";
+                if (this.turn > 0 && this.turn < this.maxTurns) {
+                    suggestion = this.analyzeDice();
+                }
+                
+                // Update dice display
+                for (let i = 0; i < 5; i++) {
+                    const dieElement = document.getElementById(`die-${i}`);
+                    
+                    // Don't update if currently rolling
+                    if (dieElement.classList.contains('rolling')) {
+                        continue;
+                    }
+                    
+                    if (this.dice[i] > 0) {
+                        this.setDiceFace(dieElement, this.dice[i]);
+                    }
+                    
+                    // Remove state classes but preserve face classes
+                    dieElement.classList.remove('held', 'suggested');
+                    
+                    // Add appropriate classes - held takes priority over suggested
+                    if (this.heldDice[i]) {
+                        dieElement.classList.add('held');
+                    } else if (this.suggestedDice[i] && this.turn > 0 && this.turn < this.maxTurns) {
+                        dieElement.classList.add('suggested');
+                    }
+                }
+
+                // Update turn info and hints
+                const turnInfo = document.getElementById('turn-info');
+                const hints = document.getElementById('hints');
+                const hintText = document.getElementById('hint-text');
+                
+                if (this.turn === 0) {
+                    turnInfo.textContent = 'Click "Roll Dice" to start your first roll!';
+                    hints.style.display = 'none';
+                } else if (this.turn < this.maxTurns) {
+                    turnInfo.textContent = `Turn ${this.turn} of ${this.maxTurns} - Orange dice are suggested to keep`;
+                    hintText.textContent = suggestion;
+                    hints.style.display = 'block';
+                } else {
+                    turnInfo.textContent = 'Round complete!';
+                    hints.style.display = 'none';
+                    this.showFinalResult();
+                }
+
+                // Update button states
+                const rollBtn = document.getElementById('roll-btn');
+                if (this.turn >= this.maxTurns) {
+                    rollBtn.disabled = true;
+                    rollBtn.textContent = 'Round Complete';
+                } else {
+                    rollBtn.disabled = false;
+                    rollBtn.textContent = this.turn === 0 ? 'Roll Dice' : 'Roll Again';
+                }
+            }
+
+            showFinalResult() {
+                const finalResult = document.getElementById('final-result');
+                const finalDice = document.getElementById('final-dice');
+                const sortedDice = document.getElementById('sorted-dice');
+                
+                const bestScore = this.getBestScore();
+                const allScores = this.calculateYahtzeeScores();
+                
+                finalDice.textContent = `Final dice: ${this.dice.join(', ')}`;
+                sortedDice.textContent = `Sorted: ${[...this.dice].sort((a, b) => a - b).join(', ')}`;
+                
+                // Add best score display
+                const bestScoreDiv = document.getElementById('best-score') || this.createBestScoreDiv();
+                bestScoreDiv.innerHTML = `
+                    <strong>🏆 Best Score: ${bestScore.score} points (${bestScore.category})</strong>
+                    <br><br>
+                    <details>
+                        <summary>All possible scores:</summary>
+                        <div style="margin-top: 10px; text-align: left;">
+                            ${this.formatAllScores(allScores)}
+                        </div>
+                    </details>
+                `;
+                
+                finalResult.style.display = 'block';
+            }
+
+            createBestScoreDiv() {
+                const bestScoreDiv = document.createElement('div');
+                bestScoreDiv.id = 'best-score';
+                bestScoreDiv.className = 'dice-values';
+                bestScoreDiv.style.marginTop = '15px';
+                document.getElementById('final-result').appendChild(bestScoreDiv);
+                return bestScoreDiv;
+            }
+
+            formatAllScores(scores) {
+                const categories = [
+                    'Yahtzee', 'Large Straight', 'Small Straight', 'Full House',
+                    'Four of a Kind', 'Three of a Kind', 'Chance',
+                    '6s', '5s', '4s', '3s', '2s', '1s'
+                ];
+                
+                return categories
+                    .filter(category => scores[category] > 0)
+                    .map(category => `${category}: ${scores[category]} points`)
+                    .join('<br>');
+            }
+
+            newGame() {
+                this.dice = [0, 0, 0, 0, 0];
+                this.heldDice = [false, false, false, false, false];
+                this.suggestedDice = [false, false, false, false, false];
+                this.turn = 0;
+                this.gameStarted = true;
+                
+                // Reset dice display
+                for (let i = 0; i < 5; i++) {
+                    const dieElement = document.getElementById(`die-${i}`);
+                    dieElement.textContent = '?';
+                    dieElement.classList.remove('held', 'suggested', 'rolling', 'shake');
+                }
+                
+                // Hide final result and hints
+                document.getElementById('final-result').style.display = 'none';
+                document.getElementById('hints').style.display = 'none';
+                
+                this.updateDisplay();
+            }
+        }
+
+        // Initialize game
+        const game = new YahtzeeGame();
+
+        // Global functions for button clicks
+        function rollDice() {
+            game.rollDice();
+        }
+
+        function newGame() {
+            game.newGame();
+        }
+
+
+
+        // Add click listeners to dice
+        for (let i = 0; i < 5; i++) {
+            document.getElementById(`die-${i}`).addEventListener('click', () => {
+                game.toggleHold(i);
+            });
+        }
+
+        // Initialize display
+        game.updateDisplay();
+    </script>
+</body>
+</html>
