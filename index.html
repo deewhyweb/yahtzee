@@ -593,6 +593,14 @@ KEY STRATEGIC PRINCIPLES:
 4. Upper section bonus requires 63+ points (3+ of each number 1-6)
 5. Late in game, sometimes take a zero to preserve high-value categories
 
+PROFESSIONAL STRATEGY (from expert guides):
+6. PRIORITIZE 4s, 5s, and 6s in upper section - these are your path to the 63-point bonus
+7. AVOID using 1s and 2s for 3/4 of a Kind - they yield lower totals than higher numbers
+8. STRATEGICALLY ZERO 1s and 2s boxes to preserve better scoring opportunities
+9. ROLL for Yahtzees EARLY in the game for maximum point potential (first=50pts, additional=100pts bonus)
+10. SAVE Chance category for late game as a strategic safety net
+11. ZERO OUT Yahtzee box near end if probability of rolling another is extremely low
+
 STRAIGHT STRATEGY MASTERY:
 - Small Straight (30 pts): Need any 4 consecutive numbers (1-2-3-4, 2-3-4-5, or 3-4-5-6)
 - Large Straight (40 pts): Need exactly 5 consecutive numbers (1-2-3-4-5 or 2-3-4-5-6)
@@ -1513,11 +1521,13 @@ MULTIPLES STRATEGY:
 - Pairs: Good for Full House, but abandon if better options exist
 - Multiple pairs: Excellent for Full House potential
 
-UPPER SECTION STRATEGY:
+UPPER SECTION STRATEGY (Expert Level):
 - Need 63+ total for 35 bonus points (average 10.5 per category)
-- Priority order when needing upper section: 6s > 5s > 4s > 3s > 2s > 1s
-- If behind on upper section and have good 4s/5s/6s, prioritize those
+- PRIORITY ORDER: 6s > 5s > 4s > 3s > 2s > 1s (focus on high numbers!)
+- EXPERT TIP: If you roll high numbers of 4s, 5s, or 6s, ALWAYS use them in upper section first
+- STRATEGIC ZEROS: Consider zeroing 1s and 2s to preserve better opportunities
 - Don't chase upper section if you already have 63+ points
+- AVOID using 1s/2s for Three/Four of a Kind - use higher numbers instead
 
 TURN-SPECIFIC STRATEGY:
 - Turn 1: Be aggressive, chase high-value combinations
@@ -1659,32 +1669,38 @@ UPPER SECTION BONUS MATH:
 - Late game: If you have 45+ upper section points, prioritize filling upper section
 - If you have < 30 upper section points with few categories left, bonus is unlikely
 
-GAME SITUATION ANALYSIS:
-- Early game (rounds 1-4): Prioritize high-value categories (Yahtzee, Large Straight, Full House)
-- Mid game (rounds 5-9): Balance high-value categories with upper section needs
-- Late game (rounds 10-13): Take guaranteed points, avoid zeros if possible
+GAME SITUATION ANALYSIS (Expert Timing):
+- Early game (rounds 1-4): AGGRESSIVELY pursue Yahtzees (50 pts + potential 100 pt bonuses), Large Straights, Full Houses
+- Mid game (rounds 5-9): Balance high-value categories with upper section 4s/5s/6s priority
+- Late game (rounds 10-13): Use Chance as safety net, consider strategic zeros for 1s/2s
+- END GAME: Zero out Yahtzee box if probability is extremely low (save other categories)
 
-SPECIFIC DECISION EXAMPLES:
+SPECIFIC DECISION EXAMPLES (Expert Level):
 - If dice = [4,4,4,4,4]: ALWAYS choose "yahtzee" (50 pts) not "fours" (20 pts)
 - If dice = [1,2,3,4,5]: ALWAYS choose "large-straight" (40 pts) not "small-straight" (30 pts)
 - If dice = [3,3,3,6,6]: Choose "full-house" (25 pts) over "three-of-a-kind" (21 pts)
-- If dice = [2,2,4,5,6]: If you need upper section, choose "twos" (4 pts), otherwise "chance" (19 pts)
+- If dice = [6,6,6,2,4]: Choose "three-of-a-kind" (22 pts) over "sixes" (18 pts) - higher total!
+- If dice = [1,1,1,3,5]: AVOID "three-of-a-kind" (11 pts) - prefer "ones" (3 pts) or zero elsewhere
+- If dice = [2,2,4,5,6]: Prioritize "chance" (19 pts) over "twos" (4 pts) unless desperately need upper section
+- EXPERT RULE: Never use 1s/2s for multiples unless absolutely necessary - they yield terrible totals
 
 ZERO STRATEGY:
 - Sometimes taking a zero in a low-value category preserves high-value categories
 - Better to zero "ones" than waste a full house on "three-of-a-kind"
 - Never zero high-value categories unless absolutely necessary
 
-SCORING HIERARCHY (choose the highest available that makes strategic sense):
-1. Yahtzee (50 pts) - ABSOLUTE PRIORITY
+EXPERT SCORING HIERARCHY (strategic priority order):
+1. Yahtzee (50 pts + 100 pt bonuses) - ABSOLUTE PRIORITY, pursue early!
 2. Large Straight (40 pts) - Second highest fixed value
 3. Small Straight (30 pts) - Third highest fixed value  
 4. Full House (25 pts) - Fourth highest fixed value
-5. Four of a Kind (sum of all dice) - Variable, can be 20-30 pts
-6. Three of a Kind (sum of all dice) - Variable, can be 15-30 pts
-7. Upper Section (if needed for bonus) - Strategic value depends on bonus potential
-8. Chance (sum of all dice) - Fallback category
-9. Consider zeros in low categories to preserve high-value options
+5. Four/Three of a Kind with HIGH numbers (4s/5s/6s) - Can yield 20-30 pts
+6. Upper Section 4s/5s/6s (if needed for 63+ bonus) - Path to 35 bonus points
+7. Four/Three of a Kind with MID numbers (3s) - Moderate value 15-21 pts
+8. Chance (sum of all dice) - SAVE for late game as safety net
+9. Upper Section 1s/2s/3s - Lower priority unless bonus is achievable
+10. AVOID: Three/Four of a Kind with 1s/2s - terrible point efficiency
+11. STRATEGIC ZEROS: Zero 1s/2s to preserve better scoring opportunities
 
 Respond with ONLY a JSON object in this exact format:
 {
@@ -1905,9 +1921,20 @@ CATEGORIES REMAINING: ${empty.length}/13
             }
 
             showAIReasoning(player, action, reasoning) {
+                console.log(`🧠 showAIReasoning called for ${player.name}: ${action}`);
                 const reasoningArea = document.getElementById('ai-reasoning');
                 const reasoningContent = document.getElementById('reasoning-content');
                 
+                if (!reasoningArea) {
+                    console.error('❌ ai-reasoning element not found!');
+                    return;
+                }
+                if (!reasoningContent) {
+                    console.error('❌ reasoning-content element not found!');
+                    return;
+                }
+                
+                console.log(`✅ Found reasoning elements, showing reasoning box`);
                 // Show the reasoning area
                 reasoningArea.style.display = 'block';
                 
@@ -2202,9 +2229,11 @@ CATEGORIES REMAINING: ${empty.length}/13
                             holdDecision = await this.llmDecideHold(player);
                         } else {
                             holdDecision = this.autoPlayDecideHold(player);
-                            // Show traditional AI reasoning
-                            this.showAIReasoning(player, `🎪 Traditional AI Hold Decision (Turn ${this.turn})`, 
-                                "Using rule-based AI strategy for dice holding");
+                            // Show traditional AI reasoning with actual decision
+                            const heldDice = this.dice.filter((die, index) => holdDecision[index]);
+                            const notHeldDice = this.dice.filter((die, index) => !holdDecision[index]);
+                            const reasoning = `Using rule-based AI strategy for dice holding\n\n🎲 Actually holding: [${heldDice.join(', ')}]\n🔄 Will reroll: [${notHeldDice.join(', ')}]`;
+                            this.showAIReasoning(player, `🎪 Traditional AI Hold Decision (Turn ${this.turn})`, reasoning);
                         }
                         
                         this.heldDice = holdDecision;
@@ -2222,9 +2251,9 @@ CATEGORIES REMAINING: ${empty.length}/13
                     choice = await this.llmChooseCategory(player);
                 } else {
                     choice = this.autoPlayChooseCategory(player);
-                    // Show traditional AI reasoning
-                    this.showAIReasoning(player, `🎪 Traditional AI Category Selection: ${choice.category} (${choice.score} pts)`, 
-                        "Used rule-based AI to select highest scoring available category");
+                    // Show traditional AI reasoning with strategy explanation
+                    const reasoning = `Used rule-based AI to select highest scoring available category\n\nSelected: ${choice.category} (${choice.score} points)\nStrategy: Traditional AI prioritizes highest immediate score`;
+                    this.showAIReasoning(player, `🎪 Traditional AI Category Selection: ${choice.category} (${choice.score} pts)`, reasoning);
                 }
                 console.log(`${player.name} chooses ${choice.category} for ${choice.score} points`);
                 
