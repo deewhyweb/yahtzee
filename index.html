@@ -2187,12 +2187,12 @@ CATEGORIES REMAINING: ${empty.length}/13
                         this.setActivePlayer(player);
                         await this.playPlayerTurn(player);
                         
-                        // Short delay between players
-                        await this.delay(800);
+                        // Longer delay between players to prevent rate limiting
+                        await this.delay(2000);
                     }
                     
-                    // Longer delay between rounds
-                    await this.delay(1500);
+                    // Even longer delay between rounds
+                    await this.delay(3000);
                 }
                 
                 if (this.isAutoPlaying) {
@@ -2226,7 +2226,12 @@ CATEGORIES REMAINING: ${empty.length}/13
                         let holdDecision;
                         if (player.strategy.startsWith('llm-') && this.useLLM) {
                             console.log(`${player.name} thinking with ChatGPT...`);
+                            // Add delay before API call to prevent rate limiting
+                            console.log(`⏳ Waiting 2 seconds to prevent API rate limiting...`);
+                            await this.delay(2000);
                             holdDecision = await this.llmDecideHold(player);
+                            // Add delay after API call
+                            await this.delay(1000);
                         } else {
                             holdDecision = this.autoPlayDecideHold(player);
                             // Show traditional AI reasoning with actual decision
@@ -2248,7 +2253,12 @@ CATEGORIES REMAINING: ${empty.length}/13
                 let choice;
                 if (player.strategy.startsWith('llm-') && this.useLLM) {
                     console.log(`${player.name} choosing category with ChatGPT...`);
+                    // Add delay before API call to prevent rate limiting
+                    console.log(`⏳ Waiting 2 seconds to prevent API rate limiting...`);
+                    await this.delay(2000);
                     choice = await this.llmChooseCategory(player);
+                    // Add delay after API call
+                    await this.delay(1000);
                 } else {
                     choice = this.autoPlayChooseCategory(player);
                     // Show traditional AI reasoning with strategy explanation
