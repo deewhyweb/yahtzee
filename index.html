@@ -68,18 +68,6 @@
             border-color: #c0392b;
         }
 
-        .die.suggested {
-            background: #f39c12;
-            color: white;
-            border-color: #e67e22;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(243, 156, 18, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(243, 156, 18, 0); }
-        }
 
         .die.rolling {
             animation: roll 0.8s ease-in-out;
@@ -155,24 +143,6 @@
             margin: 10px 0;
         }
 
-        .hints {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .hints h4 {
-            color: #856404;
-            margin-top: 0;
-        }
-
-        .hint-suggestion {
-            color: #495057;
-            font-weight: bold;
-        }
 
         .fireworks {
             position: fixed;
@@ -463,10 +433,6 @@
                 <button id="auto-play-btn" onclick="startAutoPlay()">🧠 GPT-4 vs AI Battle</button>
             </div>
 
-            <div id="hints" class="hints" style="display: none;">
-                <h4>💡 Suggestion</h4>
-                <div id="hint-text" class="hint-suggestion"></div>
-            </div>
 
             <div id="final-result" class="final-result" style="display: none;">
                 <h3>🎉 Round Complete! 🎉</h3>
@@ -495,6 +461,8 @@
                 this.scorecard = {};
                 this.currentRound = 0;
                 this.maxRounds = 13;
+                this.bonusYahtzees = 0; // Track additional Yahtzees (100 points each)
+                this.extraRolls = 0; // Track earned bonus rolls for end-game
             }
         }
 
@@ -505,7 +473,6 @@
                 this.turn = 0;
                 this.maxTurns = 3;
                 this.gameStarted = false;
-                this.suggestedDice = [false, false, false, false, false];
                 this.diceEmoji = ['', '🎲', '🎲', '🎲', '🎲', '🎲', '🎲'];
                 this.isAutoPlaying = false;
                 
@@ -580,7 +547,7 @@
                             'Authorization': `Bearer ${this.openaiApiKey}`
                         },
                         body: JSON.stringify({
-                            model: 'gpt-4',
+                            model: 'gpt-4.5-preview',
                             messages: [
                                 {
                                     role: 'system',
@@ -612,6 +579,23 @@ PROBABILITY AWARENESS:
 - Chance of rolling specific number in 1 die: 1/6 (16.7%)
 - Chance of rolling specific number in 2 dice: 11/36 (30.6%)
 - After turn 2, be realistic about what's achievable
+
+OPTIMAL SCORING THRESHOLDS (avoid low scores early in game):
+- Yahtzee: ALWAYS take (50 pts) - never pass this up!
+- Large Straight: ALWAYS take (40 pts) - maximum value
+- Small Straight: ALWAYS take (30 pts) - maximum value
+- Full House: ALWAYS take (25 pts) - maximum value
+- Four of a Kind: Optimal 20+ points (avoid under 16 early game)
+- Three of a Kind: Optimal 18+ points (avoid under 15 early game)
+- Sixes: Optimal 12+ points (3+ sixes)
+- Fives: Optimal 10+ points (2+ fives)
+- Fours: Optimal 8+ points (2+ fours)
+- Threes: Optimal 6+ points (2+ threes)
+- Twos: Optimal 4+ points (2+ twos)
+- Ones: Optimal 3+ points (3+ ones)
+- Chance: Save for late game or when 15+ points
+
+EARLY GAME RULE: In rounds 1-6, avoid taking categories significantly below optimal unless no other choice exists. Better to take a strategic zero in ones/twos than waste a four-of-a-kind worth 12 points.
 
 CRITICAL: You can ONLY choose categories that are explicitly listed as AVAILABLE. Never choose a category that's already been filled.
 
@@ -726,6 +710,10 @@ Always respond with valid JSON format only.`
                                     <td>Yahtzee</td>
                                     <td class="score-cell" id="player-${player.id}-yahtzee">-</td>
                                 </tr>
+                                <tr class="bonus-yahtzee">
+                                    <td>Bonus Yahtzees</td>
+                                    <td class="score-cell" id="player-${player.id}-bonus-yahtzees">0 × 100 = 0</td>
+                                </tr>
                                 <tr data-category="chance">
                                     <td>Chance</td>
                                     <td class="score-cell" id="player-${player.id}-chance">-</td>
@@ -820,8 +808,6 @@ Always respond with valid JSON format only.`
                     this.gameStarted = true;
                 }
                 
-                // Clear previous suggestions when starting a new roll
-                this.suggestedDice = [false, false, false, false, false];
                 
                 // Disable roll button during animation
                 const rollBtn = document.getElementById('roll-btn');
@@ -835,8 +821,6 @@ Always respond with valid JSON format only.`
                 for (let i = 0; i < 5; i++) {
                     const dieElement = document.getElementById(`die-${i}`);
                     if (!this.heldDice[i]) {
-                        // Clear suggested class immediately when starting to roll
-                        dieElement.classList.remove('suggested');
                         
                         // Random duration between 1500ms and 3000ms
                         const duration = 1500 + Math.random() * 1500;
@@ -886,102 +870,6 @@ Always respond with valid JSON format only.`
                 }
             }
 
-            analyzeDice() {
-                const counts = {};
-                this.dice.forEach(die => counts[die] = (counts[die] || 0) + 1);
-                
-                const sortedCounts = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-                const maxCount = sortedCounts[0][1];
-                const maxValue = parseInt(sortedCounts[0][0]);
-                
-                // Reset suggestions
-                this.suggestedDice = [false, false, false, false, false];
-                
-                let suggestion = "";
-                
-                // Check for Yahtzee (5 of a kind)
-                if (maxCount === 5) {
-                    suggestion = "🎉 YAHTZEE! Keep all dice!";
-                    this.suggestedDice = [true, true, true, true, true];
-                }
-                // Check for 4 of a kind
-                else if (maxCount === 4) {
-                    suggestion = `Keep all four ${maxValue}s for Four of a Kind!`;
-                    for (let i = 0; i < 5; i++) {
-                        if (this.dice[i] === maxValue) this.suggestedDice[i] = true;
-                    }
-                }
-                // Check for 3 of a kind
-                else if (maxCount === 3) {
-                    suggestion = `Keep the three ${maxValue}s for Three of a Kind!`;
-                    for (let i = 0; i < 5; i++) {
-                        if (this.dice[i] === maxValue) this.suggestedDice[i] = true;
-                    }
-                }
-                // Check for pairs
-                else if (maxCount === 2) {
-                    const pairs = sortedCounts.filter(([value, count]) => count === 2);
-                    if (pairs.length === 2) {
-                        suggestion = "Two Pair! Keep both pairs for Full House potential!";
-                        pairs.forEach(([value]) => {
-                            for (let i = 0; i < 5; i++) {
-                                if (this.dice[i] === parseInt(value)) this.suggestedDice[i] = true;
-                            }
-                        });
-                    } else {
-                        suggestion = `Keep the pair of ${maxValue}s!`;
-                        for (let i = 0; i < 5; i++) {
-                            if (this.dice[i] === maxValue) this.suggestedDice[i] = true;
-                        }
-                    }
-                }
-                // Check for straights
-                else {
-                    const uniqueDice = [...new Set(this.dice)].sort((a, b) => a - b);
-                    let consecutive = 1;
-                    let maxConsecutive = 1;
-                    let straightStart = uniqueDice[0];
-                    
-                    for (let i = 1; i < uniqueDice.length; i++) {
-                        if (uniqueDice[i] === uniqueDice[i-1] + 1) {
-                            consecutive++;
-                            if (consecutive > maxConsecutive) {
-                                maxConsecutive = consecutive;
-                                straightStart = uniqueDice[i - consecutive + 1];
-                            }
-                        } else {
-                            consecutive = 1;
-                        }
-                    }
-                    
-                    if (maxConsecutive >= 4) {
-                        suggestion = maxConsecutive === 5 ? "Large Straight! Keep all!" : "Small Straight potential! Keep the sequence!";
-                        for (let i = 0; i < 5; i++) {
-                            const die = this.dice[i];
-                            if (die >= straightStart && die < straightStart + maxConsecutive) {
-                                this.suggestedDice[i] = true;
-                            }
-                        }
-                    } else if (maxConsecutive === 3) {
-                        suggestion = "Keep the 3-card sequence for straight potential!";
-                        for (let i = 0; i < 5; i++) {
-                            const die = this.dice[i];
-                            if (die >= straightStart && die < straightStart + 3) {
-                                this.suggestedDice[i] = true;
-                            }
-                        }
-                    } else {
-                        // Keep highest dice for chance
-                        const highDice = Math.max(...this.dice);
-                        suggestion = `Keep the ${highDice}s for highest score!`;
-                        for (let i = 0; i < 5; i++) {
-                            if (this.dice[i] === highDice) this.suggestedDice[i] = true;
-                        }
-                    }
-                }
-                
-                return suggestion;
-            }
 
             calculateYahtzeeScores() {
                 const counts = {};
@@ -1128,10 +1016,33 @@ Always respond with valid JSON format only.`
                     }
                 });
                 
+                // Add bonus Yahtzee points (100 points each)
+                totalScore += player.bonusYahtzees * 100;
+                
                 document.getElementById(`player-${player.id}-total`).textContent = totalScore;
             }
 
             fillScorecard(player, category, score) {
+                // Check for bonus Yahtzee (additional Yahtzees after the first one)
+                if (category === 'yahtzee' && score === 50 && player.scorecard['yahtzee'] !== undefined) {
+                    // This is a bonus Yahtzee (100 points each)
+                    player.bonusYahtzees++;
+                    player.extraRolls++; // Grant extra roll for end-game
+                    
+                    // Update bonus Yahtzee display
+                    const bonusElement = document.getElementById(`player-${player.id}-bonus-yahtzees`);
+                    if (bonusElement) {
+                        bonusElement.textContent = `${player.bonusYahtzees} × 100 = ${player.bonusYahtzees * 100}`;
+                    }
+                    
+                    // Show fireworks for bonus Yahtzee too
+                    this.triggerFireworks();
+                    
+                    // Don't overwrite the original Yahtzee category, just add bonus points
+                    this.updateScorecard(player);
+                    return;
+                }
+                
                 player.scorecard[category] = score;
                 document.getElementById(`player-${player.id}-${category}`).textContent = score;
                 this.updateScorecard(player);
@@ -1141,7 +1052,15 @@ Always respond with valid JSON format only.`
                 const allCategories = ['ones', 'twos', 'threes', 'fours', 'fives', 'sixes',
                                      'three-of-a-kind', 'four-of-a-kind', 'full-house',
                                      'small-straight', 'large-straight', 'yahtzee', 'chance'];
-                return allCategories.filter(cat => player.scorecard[cat] === undefined);
+                
+                let availableCategories = allCategories.filter(cat => player.scorecard[cat] === undefined);
+                
+                // Special case: Allow Yahtzee again if player has a Yahtzee on dice and has already scored Yahtzee
+                if (player.scorecard['yahtzee'] !== undefined && this.scoreCategory('yahtzee') === 50) {
+                    availableCategories.push('yahtzee');
+                }
+                
+                return availableCategories;
             }
 
             getCurrentPlayer() {
@@ -1631,10 +1550,22 @@ ANOTHER EXAMPLE: If dice are [1,2,3,4,5] and you want to hold 1-2-3 consecutive:
                     });
 
                     const diceAnalysis = this.analyzeDiceForLLM();
+                    const currentRound = Object.keys(player.scorecard).length + 1;
+                    const gamePhase = currentRound <= 6 ? 'EARLY GAME' : currentRound <= 10 ? 'MID GAME' : 'LATE GAME';
+                    
                     const prompt = `You are ${player.name}, an AI Yahtzee player with ${player.strategy} strategy.
 
-🎯 AVAILABLE CATEGORIES (ONLY THESE CAN BE CHOSEN):
-${Object.entries(possibleScores).map(([cat, score]) => `✅ ${cat}: ${score} points`).join('\n')}
+🎯 GAME STATUS: Round ${currentRound}/13 (${gamePhase})
+${gamePhase === 'EARLY GAME' ? '⚠️ EARLY GAME: Avoid low scores! Better to take strategic zeros than waste good combinations.' : 
+  gamePhase === 'MID GAME' ? '⚖️ MID GAME: Balance optimal scores with filling remaining categories.' : 
+  '🏁 LATE GAME: Take any reasonable score to avoid zeros.'}
+
+🎯 AVAILABLE CATEGORIES WITH OPTIMAL THRESHOLDS:
+${Object.entries(possibleScores).map(([cat, score]) => {
+    const optimal = this.getOptimalThreshold(cat);
+    const status = score >= optimal ? '✅ GOOD' : score >= (optimal * 0.8) ? '⚠️ LOW' : '❌ POOR';
+    return `${status} ${cat}: ${score} points (optimal: ${optimal}+)`;
+}).join('\n')}
 
 FINAL DICE: [${this.dice.join(', ')}]
 PLAYER PERSONALITY: ${this.getPlayerPersonality(player)}
@@ -1675,14 +1606,20 @@ GAME SITUATION ANALYSIS (Expert Timing):
 - Late game (rounds 10-13): Use Chance as safety net, consider strategic zeros for 1s/2s
 - END GAME: Zero out Yahtzee box if probability is extremely low (save other categories)
 
-SPECIFIC DECISION EXAMPLES (Expert Level):
+SPECIFIC DECISION EXAMPLES (with Optimal Thresholds):
 - If dice = [4,4,4,4,4]: ALWAYS choose "yahtzee" (50 pts) not "fours" (20 pts)
 - If dice = [1,2,3,4,5]: ALWAYS choose "large-straight" (40 pts) not "small-straight" (30 pts)
 - If dice = [3,3,3,6,6]: Choose "full-house" (25 pts) over "three-of-a-kind" (21 pts)
-- If dice = [6,6,6,2,4]: Choose "three-of-a-kind" (22 pts) over "sixes" (18 pts) - higher total!
-- If dice = [1,1,1,3,5]: AVOID "three-of-a-kind" (11 pts) - prefer "ones" (3 pts) or zero elsewhere
-- If dice = [2,2,4,5,6]: Prioritize "chance" (19 pts) over "twos" (4 pts) unless desperately need upper section
-- EXPERT RULE: Never use 1s/2s for multiples unless absolutely necessary - they yield terrible totals
+- If dice = [6,6,6,2,4]: "three-of-a-kind" (22 pts) vs "sixes" (18 pts) - take three-of-a-kind (above 18 threshold)
+- If dice = [4,4,4,2,3]: "three-of-a-kind" (16 pts) - EARLY GAME: avoid (below 18 threshold), take "fours" (8 pts) or zero elsewhere
+- If dice = [5,5,2,3,6]: "fives" (10 pts) - GOOD (meets 10 threshold), take it for upper section
+- If dice = [1,1,1,3,5]: "three-of-a-kind" (11 pts) - POOR (below 18 threshold), take "ones" (3 pts) or zero "twos"
+- If dice = [2,2,4,5,6]: "chance" (19 pts) - GOOD (above 15 threshold), better than "twos" (4 pts)
+
+THRESHOLD DECISION RULES:
+✅ GOOD (≥optimal): Take immediately
+⚠️ LOW (80-99% of optimal): Consider if mid/late game or need category
+❌ POOR (<80% of optimal): AVOID in early game, take strategic zero instead
 
 ZERO STRATEGY:
 - Sometimes taking a zero in a low-value category preserves high-value categories
@@ -2153,6 +2090,26 @@ CATEGORIES REMAINING: ${empty.length}/13
                 return minimums[category] || 0;
             }
 
+            getOptimalThreshold(category) {
+                // Optimal scoring thresholds for each category
+                const optimal = {
+                    'yahtzee': 50,         // Always take
+                    'large-straight': 40,  // Always take
+                    'small-straight': 30,  // Always take
+                    'full-house': 25,      // Always take
+                    'four-of-a-kind': 20,  // 4 fives or better
+                    'three-of-a-kind': 18, // 3 sixes or good total
+                    'sixes': 12,           // 3+ sixes
+                    'fives': 10,           // 2+ fives
+                    'fours': 8,            // 2+ fours
+                    'threes': 6,           // 2+ threes
+                    'twos': 4,             // 2+ twos
+                    'ones': 3,             // 3+ ones
+                    'chance': 15           // Save for late game
+                };
+                return optimal[category] || 0;
+            }
+
             async startMultiPlayerAutoPlay() {
                 if (this.isAutoPlaying) return;
                 
@@ -2167,6 +2124,8 @@ CATEGORIES REMAINING: ${empty.length}/13
                 this.players.forEach(player => {
                     player.scorecard = {};
                     player.currentRound = 0;
+                    player.bonusYahtzees = 0; // Reset bonus Yahtzees
+                    player.extraRolls = 0; // Reset extra rolls
                 });
                 this.initializeScoreCards();
                 
@@ -2196,6 +2155,9 @@ CATEGORIES REMAINING: ${empty.length}/13
                 }
                 
                 if (this.isAutoPlaying) {
+                    // Check for bonus rolls (from bonus Yahtzees)
+                    await this.playBonusRolls();
+                    
                     this.stopAutoPlay();
                     this.showFinalMultiPlayerResults();
                 }
@@ -2273,6 +2235,120 @@ CATEGORIES REMAINING: ${empty.length}/13
                 await this.delay(800);
             }
 
+            async playBonusRolls() {
+                // Check if any players have earned bonus rolls from bonus Yahtzees
+                const playersWithBonusRolls = this.players.filter(player => player.extraRolls > 0);
+                
+                if (playersWithBonusRolls.length === 0) {
+                    console.log('No bonus rolls to play - continuing to final results');
+                    return;
+                }
+                
+                console.log(`\n=== BONUS ROLL PHASE ===`);
+                console.log(`Players with bonus rolls: ${playersWithBonusRolls.map(p => `${p.name} (${p.extraRolls})`).join(', ')}`);
+                
+                // Each player with bonus rolls gets to fill in blank categories
+                for (let player of playersWithBonusRolls) {
+                    while (player.extraRolls > 0 && this.isAutoPlaying) {
+                        // Find remaining blank categories
+                        const blankCategories = this.getAvailableCategories(player);
+                        
+                        if (blankCategories.length === 0) {
+                            console.log(`${player.name} has no remaining blank categories for bonus roll`);
+                            player.extraRolls = 0; // Use up remaining rolls
+                            break;
+                        }
+                        
+                        console.log(`\n--- ${player.name}'s BONUS ROLL (${player.extraRolls} remaining) ---`);
+                        console.log(`Available categories: ${blankCategories.join(', ')}`);
+                        
+                        this.setActivePlayer(player);
+                        
+                        // Play a full turn (3 rolls) for the bonus roll
+                        await this.playBonusPlayerTurn(player);
+                        
+                        player.extraRolls--;
+                        
+                        // Delay between bonus rolls
+                        await this.delay(2000);
+                    }
+                }
+                
+                console.log('Bonus roll phase complete');
+            }
+
+            async playBonusPlayerTurn(player) {
+                const availableCategories = this.getAvailableCategories(player);
+                if (availableCategories.length === 0) {
+                    console.log(`${player.name} has no available categories for bonus roll`);
+                    return;
+                }
+                
+                // Reset turn state
+                this.resetTurn();
+                
+                // Play up to 3 turns for this bonus roll
+                for (let turn = 1; turn <= 3 && this.isAutoPlaying; turn++) {
+                    console.log(`${player.name} - bonus turn ${turn}`);
+                    
+                    // Roll dice
+                    await this.autoRollDice();
+                    
+                    // Wait to see the result
+                    await this.delay(1000);
+                    
+                    if (turn < 3) {
+                        // AI decides what to hold
+                        let holdDecision;
+                        if (player.strategy.startsWith('llm-')) {
+                            // Add delay before LLM call to prevent rate limiting
+                            await this.delay(2000);
+                            holdDecision = await this.llmDecideHold(player);
+                            // Add delay after LLM call
+                            await this.delay(1000);
+                        } else {
+                            holdDecision = this.autoPlayDecideHold(player);
+                        }
+                        
+                        this.heldDice = holdDecision;
+                        this.updateDisplay();
+                        
+                        // Show what AI is holding
+                        await this.delay(1500);
+                    }
+                }
+                
+                // Choose category and score for bonus roll
+                let choice;
+                if (player.strategy.startsWith('llm-')) {
+                    // Add delay before LLM call
+                    await this.delay(2000);
+                    choice = await this.llmChooseCategory(player);
+                    // Add delay after LLM call
+                    await this.delay(1000);
+                } else {
+                    choice = this.autoPlayChooseCategory(player);
+                }
+                
+                console.log(`${player.name} BONUS ROLL chooses ${choice.category} for ${choice.score} points`);
+                
+                // Highlight the chosen category
+                const categoryRow = document.querySelector(`tr[data-category="${choice.category}"]`);
+                if (categoryRow) {
+                    categoryRow.classList.add('current-turn');
+                }
+                
+                await this.delay(1000);
+                
+                this.fillScorecard(player, choice.category, choice.score);
+                
+                if (categoryRow) {
+                    categoryRow.classList.remove('current-turn');
+                }
+                
+                await this.delay(1500);
+            }
+
             showFinalMultiPlayerResults() {
                 console.log('\n=== FINAL RESULTS ===');
                 const results = this.players.map(player => {
@@ -2312,6 +2388,9 @@ CATEGORIES REMAINING: ${empty.length}/13
                         totalScore += player.scorecard[category];
                     }
                 });
+                
+                // Add bonus Yahtzee points (100 points each)
+                totalScore += player.bonusYahtzees * 100;
                 
                 return totalScore;
             }
@@ -2392,18 +2471,11 @@ CATEGORIES REMAINING: ${empty.length}/13
             resetTurn() {
                 this.turn = 0;
                 this.heldDice = [false, false, false, false, false];
-                this.suggestedDice = [false, false, false, false, false];
                 this.dice = [0, 0, 0, 0, 0];
                 this.gameStarted = true;
             }
 
             updateDisplay() {
-                // Generate suggestions first if we have dice rolled
-                let suggestion = "";
-                if (this.turn > 0 && this.turn < this.maxTurns) {
-                    suggestion = this.analyzeDice();
-                }
-                
                 // Update dice display
                 for (let i = 0; i < 5; i++) {
                     const dieElement = document.getElementById(`die-${i}`);
@@ -2418,31 +2490,23 @@ CATEGORIES REMAINING: ${empty.length}/13
                     }
                     
                     // Remove state classes but preserve face classes
-                    dieElement.classList.remove('held', 'suggested');
+                    dieElement.classList.remove('held');
                     
-                    // Add appropriate classes - held takes priority over suggested
+                    // Add held class if dice is held
                     if (this.heldDice[i]) {
                         dieElement.classList.add('held');
-                    } else if (this.suggestedDice[i] && this.turn > 0 && this.turn < this.maxTurns) {
-                        dieElement.classList.add('suggested');
                     }
                 }
 
-                // Update turn info and hints
+                // Update turn info
                 const turnInfo = document.getElementById('turn-info');
-                const hints = document.getElementById('hints');
-                const hintText = document.getElementById('hint-text');
                 
                 if (this.turn === 0) {
                     turnInfo.textContent = 'Click "Roll Dice" to start your first roll!';
-                    hints.style.display = 'none';
                 } else if (this.turn < this.maxTurns) {
-                    turnInfo.textContent = `Turn ${this.turn} of ${this.maxTurns} - Orange dice are suggested to keep`;
-                    hintText.textContent = suggestion;
-                    hints.style.display = 'block';
+                    turnInfo.textContent = `Turn ${this.turn} of ${this.maxTurns} - Click dice to hold/release`;
                 } else {
                     turnInfo.textContent = 'Round complete!';
-                    hints.style.display = 'none';
                     this.showFinalResult();
                 }
 
@@ -2509,7 +2573,6 @@ CATEGORIES REMAINING: ${empty.length}/13
             newGame() {
                 this.dice = [0, 0, 0, 0, 0];
                 this.heldDice = [false, false, false, false, false];
-                this.suggestedDice = [false, false, false, false, false];
                 this.turn = 0;
                 this.gameStarted = true;
                 this.scorecard = {};
@@ -2536,9 +2599,8 @@ CATEGORIES REMAINING: ${empty.length}/13
                 document.getElementById('upper-bonus').textContent = '0';
                 document.getElementById('total-score').textContent = '0';
                 
-                // Hide final result and hints
+                // Hide final result
                 document.getElementById('final-result').style.display = 'none';
-                document.getElementById('hints').style.display = 'none';
                 
                 this.updateDisplay();
             }
