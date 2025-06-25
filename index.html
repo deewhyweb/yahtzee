@@ -250,52 +250,254 @@
             40% { transform: translate(-50%, -50%) translateY(-30px); }
             60% { transform: translate(-50%, -50%) translateY(-15px); }
         }
+
+        .scorecard-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 300px;
+        }
+
+        .scorecard-container h3 {
+            text-align: center;
+            color: #2c3e50;
+            margin-top: 0;
+        }
+
+        .scorecard {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .scorecard th {
+            background: #3498db;
+            color: white;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .scorecard td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .scorecard .score-cell {
+            text-align: center;
+            font-weight: bold;
+            width: 60px;
+        }
+
+        .scorecard tr.upper-section,
+        .scorecard tr.lower-section {
+            background: #f8f9fa;
+        }
+
+        .scorecard tr.subtotal,
+        .scorecard tr.bonus,
+        .scorecard tr.total {
+            background: #e8f4fd;
+            border-top: 2px solid #3498db;
+        }
+
+        .scorecard tr[data-category]:hover {
+            background: #f0f8ff;
+            cursor: pointer;
+        }
+
+        .scorecard tr[data-category].filled {
+            background: #d5f4e6;
+        }
+
+        .scorecard tr[data-category].current-turn {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+
+        .game-container {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .game-area {
+            flex: 1;
+            min-width: 400px;
+        }
+
+        .scorecards-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .player-scorecard {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 280px;
+            min-width: 250px;
+        }
+
+        .player-scorecard.active-player {
+            border: 3px solid #3498db;
+            box-shadow: 0 6px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        .player-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .player-name {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .player-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background: #ecf0f1;
+        }
+
+        .player-status.playing {
+            background: #3498db;
+            color: white;
+        }
+
+        .ai-reasoning {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .ai-reasoning h4 {
+            margin-top: 0;
+            color: #17a2b8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reasoning-content {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .reasoning-entry {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .reasoning-entry:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .reasoning-player {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .reasoning-action {
+            color: #6c757d;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+
+        .reasoning-text {
+            color: #28a745;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
     <div class="game-container">
-        <h1>🎲 Yahtzee Game 🎲</h1>
-        
-        <div class="instructions">
-            <strong>How to play:</strong>
-            <ul>
-                <li>Click "Roll Dice" to start</li>
-                <li>Click on dice to hold them (they'll turn red)</li>
-                <li>You get 3 rolls per round</li>
-                <li>Try to get the best combination!</li>
-            </ul>
+        <div class="game-area">
+            <h1>🎲 Yahtzee Game 🎲</h1>
+            
+            <div class="instructions">
+                <strong>How to play:</strong>
+                <ul>
+                    <li>Click "Roll Dice" to start</li>
+                    <li>Click on dice to hold them (they'll turn red)</li>
+                    <li>You get 3 rolls per round</li>
+                    <li>Try to get the best combination!</li>
+                </ul>
+            </div>
+
+            <div class="game-info">
+                <div id="turn-info">Click "New Game" to start!</div>
+            </div>
+
+            <div class="dice-container" id="dice-container">
+                <div class="die" id="die-0">?</div>
+                <div class="die" id="die-1">?</div>
+                <div class="die" id="die-2">?</div>
+                <div class="die" id="die-3">?</div>
+                <div class="die" id="die-4">?</div>
+            </div>
+
+            <div class="controls">
+                <button id="roll-btn" onclick="rollDice()">Roll Dice</button>
+                <button id="new-game-btn" onclick="newGame()">New Game</button>
+                <button id="auto-play-btn" onclick="startAutoPlay()">🧠 GPT-4 vs AI Battle</button>
+            </div>
+
+            <div id="hints" class="hints" style="display: none;">
+                <h4>💡 Suggestion</h4>
+                <div id="hint-text" class="hint-suggestion"></div>
+            </div>
+
+            <div id="final-result" class="final-result" style="display: none;">
+                <h3>🎉 Round Complete! 🎉</h3>
+                <div id="final-dice" class="dice-values"></div>
+                <div id="sorted-dice" class="dice-values"></div>
+            </div>
+
+            <div id="ai-reasoning" class="ai-reasoning" style="display: none;">
+                <h4>🧠 AI Reasoning</h4>
+                <div id="reasoning-content" class="reasoning-content"></div>
+            </div>
         </div>
 
-        <div class="game-info">
-            <div id="turn-info">Click "New Game" to start!</div>
-        </div>
-
-        <div class="dice-container" id="dice-container">
-            <div class="die" id="die-0">?</div>
-            <div class="die" id="die-1">?</div>
-            <div class="die" id="die-2">?</div>
-            <div class="die" id="die-3">?</div>
-            <div class="die" id="die-4">?</div>
-        </div>
-
-        <div class="controls">
-            <button id="roll-btn" onclick="rollDice()">Roll Dice</button>
-            <button id="new-game-btn" onclick="newGame()">New Game</button>
-        </div>
-
-        <div id="hints" class="hints" style="display: none;">
-            <h4>💡 Suggestion</h4>
-            <div id="hint-text" class="hint-suggestion"></div>
-        </div>
-
-        <div id="final-result" class="final-result" style="display: none;">
-            <h3>🎉 Round Complete! 🎉</h3>
-            <div id="final-dice" class="dice-values"></div>
-            <div id="sorted-dice" class="dice-values"></div>
+        <div class="scorecards-container" id="scorecards-container">
+            <!-- Player scorecards will be dynamically generated here -->
         </div>
     </div>
 
     <script>
+        class YahtzeePlayer {
+            constructor(id, name, strategy = 'balanced', color = '#3498db') {
+                this.id = id;
+                this.name = name;
+                this.strategy = strategy;
+                this.color = color;
+                this.scorecard = {};
+                this.currentRound = 0;
+                this.maxRounds = 13;
+            }
+        }
+
         class YahtzeeGame {
             constructor() {
                 this.dice = [0, 0, 0, 0, 0];
@@ -305,6 +507,229 @@
                 this.gameStarted = false;
                 this.suggestedDice = [false, false, false, false, false];
                 this.diceEmoji = ['', '🎲', '🎲', '🎲', '🎲', '🎲', '🎲'];
+                this.isAutoPlaying = false;
+                
+                // OpenAI API configuration
+                this.openaiApiKey = null; // Will be set by user
+                this.useLLM = false; // Toggle for LLM vs traditional AI
+                
+                // Multi-player setup
+                this.players = [
+                    new YahtzeePlayer(0, '🧠 GPT-4 Sam', 'llm-strategic', '#3498db'),
+                    new YahtzeePlayer(1, '🤖 GPT-4 Rita', 'llm-aggressive', '#e74c3c'),
+                    new YahtzeePlayer(2, '💭 GPT-4 Carl', 'llm-conservative', '#27ae60'),
+                    new YahtzeePlayer(3, '🎪 Wild Wendy', 'random', '#f39c12') // Keep one traditional AI for comparison
+                ];
+                this.currentPlayerIndex = 0;
+                this.currentRound = 0;
+                this.maxRounds = 13;
+                
+                this.initializeScoreCards();
+                this.setupAPIKeyInput();
+            }
+
+            setupAPIKeyInput() {
+                // Add API key input to the controls
+                const controls = document.querySelector('.controls');
+                const apiKeyContainer = document.createElement('div');
+                apiKeyContainer.innerHTML = `
+                    <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                        <label for="api-key-input" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                            🧠 OpenAI API Key (for GPT-4 players):
+                        </label>
+                        <input type="password" id="api-key-input" placeholder="sk-..." 
+                               style="width: 300px; padding: 5px; margin-right: 10px; border: 1px solid #ddd; border-radius: 3px;">
+                        <button onclick="game.setApiKey()" style="padding: 5px 10px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                            Enable GPT-4 AI
+                        </button>
+                        <div id="api-status" style="margin-top: 5px; font-size: 12px; color: #666;">
+                            Enter your OpenAI API key to enable GPT-4 powered AI players
+                        </div>
+                    </div>
+                `;
+                controls.appendChild(apiKeyContainer);
+            }
+
+            setApiKey() {
+                const apiKeyInput = document.getElementById('api-key-input');
+                const apiKey = apiKeyInput.value.trim();
+                const statusDiv = document.getElementById('api-status');
+                
+                if (apiKey.startsWith('sk-') && apiKey.length > 20) {
+                    this.openaiApiKey = apiKey;
+                    this.useLLM = true;
+                    statusDiv.textContent = '✅ GPT-4 AI enabled! Players will now use advanced LLM reasoning.';
+                    statusDiv.style.color = '#28a745';
+                    console.log('OpenAI API key configured, LLM mode enabled');
+                } else {
+                    statusDiv.textContent = '❌ Invalid API key format. Please enter a valid OpenAI API key.';
+                    statusDiv.style.color = '#dc3545';
+                }
+            }
+
+            async callOpenAI(prompt, maxTokens = 150) {
+                if (!this.openaiApiKey) {
+                    throw new Error('OpenAI API key not configured');
+                }
+
+                try {
+                    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${this.openaiApiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: 'gpt-4',
+                            messages: [
+                                {
+                                    role: 'system',
+                                    content: `You are a world-class Yahtzee master with decades of tournament experience. You understand every nuance of optimal Yahtzee strategy.
+
+KEY STRATEGIC PRINCIPLES:
+1. NEVER waste high-value combinations (Yahtzee=50, Large Straight=40, Full House=25, Small Straight=30)
+2. Straights are FRAGILE - missing even one number breaks them completely
+3. For straights, you need EXACTLY consecutive numbers: 1-2-3-4, 2-3-4-5, 3-4-5-6 (small), or 1-2-3-4-5, 2-3-4-5-6 (large)
+4. Upper section bonus requires 63+ points (3+ of each number 1-6)
+5. Late in game, sometimes take a zero to preserve high-value categories
+
+STRAIGHT STRATEGY MASTERY:
+- Small Straight (30 pts): Need any 4 consecutive numbers (1-2-3-4, 2-3-4-5, or 3-4-5-6)
+- Large Straight (40 pts): Need exactly 5 consecutive numbers (1-2-3-4-5 or 2-3-4-5-6)
+- If you have 3 consecutive numbers, calculate probability of getting the 4th
+- If you have gaps (like 1-3-4-6), straights are nearly impossible - pivot to other strategies
+- Never chase straights with isolated numbers like 1-1-4-6-6
+
+PROBABILITY AWARENESS:
+- Chance of rolling specific number in 1 die: 1/6 (16.7%)
+- Chance of rolling specific number in 2 dice: 11/36 (30.6%)
+- After turn 2, be realistic about what's achievable
+
+CRITICAL: You can ONLY choose categories that are explicitly listed as AVAILABLE. Never choose a category that's already been filled.
+
+Always respond with valid JSON format only.`
+                                },
+                                {
+                                    role: 'user',
+                                    content: prompt
+                                }
+                            ],
+                            max_tokens: maxTokens,
+                            temperature: 0.3
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`OpenAI API error: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    return data.choices[0].message.content.trim();
+                } catch (error) {
+                    console.error('OpenAI API call failed:', error);
+                    throw error;
+                }
+            }
+
+            initializeScoreCards() {
+                const container = document.getElementById('scorecards-container');
+                container.innerHTML = '';
+                
+                this.players.forEach(player => {
+                    const scoreCardHtml = this.createScoreCardHTML(player);
+                    container.innerHTML += scoreCardHtml;
+                });
+            }
+
+            createScoreCardHTML(player) {
+                return `
+                    <div class="player-scorecard" id="player-${player.id}-scorecard" style="border-left: 4px solid ${player.color}">
+                        <div class="player-info">
+                            <div class="player-name">${player.name}</div>
+                            <div class="player-status" id="player-${player.id}-status">Waiting</div>
+                        </div>
+                        <table class="scorecard">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="upper-section">
+                                    <td colspan="2"><strong>Upper Section</strong></td>
+                                </tr>
+                                <tr data-category="ones">
+                                    <td>Ones</td>
+                                    <td class="score-cell" id="player-${player.id}-ones">-</td>
+                                </tr>
+                                <tr data-category="twos">
+                                    <td>Twos</td>
+                                    <td class="score-cell" id="player-${player.id}-twos">-</td>
+                                </tr>
+                                <tr data-category="threes">
+                                    <td>Threes</td>
+                                    <td class="score-cell" id="player-${player.id}-threes">-</td>
+                                </tr>
+                                <tr data-category="fours">
+                                    <td>Fours</td>
+                                    <td class="score-cell" id="player-${player.id}-fours">-</td>
+                                </tr>
+                                <tr data-category="fives">
+                                    <td>Fives</td>
+                                    <td class="score-cell" id="player-${player.id}-fives">-</td>
+                                </tr>
+                                <tr data-category="sixes">
+                                    <td>Sixes</td>
+                                    <td class="score-cell" id="player-${player.id}-sixes">-</td>
+                                </tr>
+                                <tr class="subtotal">
+                                    <td><strong>Subtotal</strong></td>
+                                    <td class="score-cell" id="player-${player.id}-subtotal">0</td>
+                                </tr>
+                                <tr class="bonus">
+                                    <td>Bonus</td>
+                                    <td class="score-cell" id="player-${player.id}-bonus">0</td>
+                                </tr>
+                                <tr class="lower-section">
+                                    <td colspan="2"><strong>Lower Section</strong></td>
+                                </tr>
+                                <tr data-category="three-of-a-kind">
+                                    <td>3 of a Kind</td>
+                                    <td class="score-cell" id="player-${player.id}-three-of-a-kind">-</td>
+                                </tr>
+                                <tr data-category="four-of-a-kind">
+                                    <td>4 of a Kind</td>
+                                    <td class="score-cell" id="player-${player.id}-four-of-a-kind">-</td>
+                                </tr>
+                                <tr data-category="full-house">
+                                    <td>Full House</td>
+                                    <td class="score-cell" id="player-${player.id}-full-house">-</td>
+                                </tr>
+                                <tr data-category="small-straight">
+                                    <td>Sm. Straight</td>
+                                    <td class="score-cell" id="player-${player.id}-small-straight">-</td>
+                                </tr>
+                                <tr data-category="large-straight">
+                                    <td>Lg. Straight</td>
+                                    <td class="score-cell" id="player-${player.id}-large-straight">-</td>
+                                </tr>
+                                <tr data-category="yahtzee">
+                                    <td>Yahtzee</td>
+                                    <td class="score-cell" id="player-${player.id}-yahtzee">-</td>
+                                </tr>
+                                <tr data-category="chance">
+                                    <td>Chance</td>
+                                    <td class="score-cell" id="player-${player.id}-chance">-</td>
+                                </tr>
+                                <tr class="total">
+                                    <td><strong>Total</strong></td>
+                                    <td class="score-cell" id="player-${player.id}-total">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `;
             }
 
             setDiceFace(element, value) {
@@ -630,6 +1055,1309 @@
                 return { category: bestScore[0], score: bestScore[1] };
             }
 
+            scoreCategory(category, dice = this.dice) {
+                const counts = {};
+                dice.forEach(die => counts[die] = (counts[die] || 0) + 1);
+                const sortedCounts = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+                const maxCount = sortedCounts[0][1];
+                const uniqueDice = [...new Set(dice)].sort((a, b) => a - b);
+                
+                switch(category) {
+                    case 'ones': return (counts[1] || 0) * 1;
+                    case 'twos': return (counts[2] || 0) * 2;
+                    case 'threes': return (counts[3] || 0) * 3;
+                    case 'fours': return (counts[4] || 0) * 4;
+                    case 'fives': return (counts[5] || 0) * 5;
+                    case 'sixes': return (counts[6] || 0) * 6;
+                    case 'three-of-a-kind': 
+                        return maxCount >= 3 ? dice.reduce((sum, die) => sum + die, 0) : 0;
+                    case 'four-of-a-kind': 
+                        return maxCount >= 4 ? dice.reduce((sum, die) => sum + die, 0) : 0;
+                    case 'full-house': 
+                        const hasThree = sortedCounts.some(([_, count]) => count === 3);
+                        const hasTwo = sortedCounts.some(([_, count]) => count === 2);
+                        return (hasThree && hasTwo) ? 25 : 0;
+                    case 'small-straight': 
+                        const smallStraights = [[1,2,3,4], [2,3,4,5], [3,4,5,6]];
+                        return smallStraights.some(straight => 
+                            straight.every(num => uniqueDice.includes(num))) ? 30 : 0;
+                    case 'large-straight': 
+                        const largeStraights = [[1,2,3,4,5], [2,3,4,5,6]];
+                        return largeStraights.some(straight => 
+                            straight.every(num => uniqueDice.includes(num)) && uniqueDice.length === 5) ? 40 : 0;
+                    case 'yahtzee': 
+                        return maxCount === 5 ? 50 : 0;
+                    case 'chance': 
+                        return dice.reduce((sum, die) => sum + die, 0);
+                    default: return 0;
+                }
+            }
+
+            updateScorecard(player) {
+                const upperCategories = ['ones', 'twos', 'threes', 'fours', 'fives', 'sixes'];
+                let upperTotal = 0;
+                
+                upperCategories.forEach(category => {
+                    if (player.scorecard[category] !== undefined) {
+                        upperTotal += player.scorecard[category];
+                    }
+                });
+                
+                document.getElementById(`player-${player.id}-subtotal`).textContent = upperTotal;
+                
+                // Upper section bonus
+                const bonus = upperTotal >= 63 ? 35 : 0;
+                document.getElementById(`player-${player.id}-bonus`).textContent = bonus;
+                
+                // Calculate total score
+                let totalScore = upperTotal + bonus;
+                const lowerCategories = ['three-of-a-kind', 'four-of-a-kind', 'full-house', 
+                                       'small-straight', 'large-straight', 'yahtzee', 'chance'];
+                
+                lowerCategories.forEach(category => {
+                    if (player.scorecard[category] !== undefined) {
+                        totalScore += player.scorecard[category];
+                    }
+                });
+                
+                document.getElementById(`player-${player.id}-total`).textContent = totalScore;
+            }
+
+            fillScorecard(player, category, score) {
+                player.scorecard[category] = score;
+                document.getElementById(`player-${player.id}-${category}`).textContent = score;
+                this.updateScorecard(player);
+            }
+
+            getAvailableCategories(player) {
+                const allCategories = ['ones', 'twos', 'threes', 'fours', 'fives', 'sixes',
+                                     'three-of-a-kind', 'four-of-a-kind', 'full-house',
+                                     'small-straight', 'large-straight', 'yahtzee', 'chance'];
+                return allCategories.filter(cat => player.scorecard[cat] === undefined);
+            }
+
+            getCurrentPlayer() {
+                return this.players[this.currentPlayerIndex];
+            }
+
+            setActivePlayer(player) {
+                // Remove active class from all players
+                this.players.forEach(p => {
+                    document.getElementById(`player-${p.id}-scorecard`).classList.remove('active-player');
+                    document.getElementById(`player-${p.id}-status`).textContent = 'Waiting';
+                    document.getElementById(`player-${p.id}-status`).classList.remove('playing');
+                });
+                
+                // Set active player
+                document.getElementById(`player-${player.id}-scorecard`).classList.add('active-player');
+                document.getElementById(`player-${player.id}-status`).textContent = 'Playing';
+                document.getElementById(`player-${player.id}-status`).classList.add('playing');
+            }
+
+            // AI Auto-play functions with scorecard-aware strategy
+            autoPlayDecideHold(player) {
+                const availableCategories = this.getAvailableCategories(player);
+                const newHeldDice = [false, false, false, false, false];
+                const counts = {};
+                this.dice.forEach(die => counts[die] = (counts[die] || 0) + 1);
+                
+                console.log(`${player.name} deciding what to hold. Available categories: ${availableCategories.join(', ')}`);
+                console.log(`Current dice: [${this.dice.join(', ')}]`);
+                
+                // Apply different AI strategies based on player personality
+                return this.applyPlayerStrategy(player, availableCategories, counts);
+            }
+
+            applyPlayerStrategy(player, availableCategories, counts) {
+                switch(player.strategy) {
+                    case 'aggressive':
+                        return this.aggressiveStrategy(player, availableCategories, counts);
+                    case 'conservative': 
+                        return this.conservativeStrategy(player, availableCategories, counts);
+                    case 'random':
+                        return this.randomStrategy(counts);
+                    case 'strategic':
+                    default:
+                        return this.strategicStrategy(player, availableCategories, counts);
+                }
+            }
+
+            strategicStrategy(player, availableCategories, counts) {
+                // Original smart strategy
+                const strategy = this.analyzeScoreCardNeeds(availableCategories, player);
+                
+                // Check for high-value completable categories first
+                let bestCurrentScore = -1;
+                let bestCurrentCategory = null;
+                
+                availableCategories.forEach(category => {
+                    const score = this.scoreCategory(category);
+                    if (score > bestCurrentScore) {
+                        bestCurrentScore = score;
+                        bestCurrentCategory = category;
+                    }
+                });
+                
+                if (bestCurrentScore >= 40 || 
+                    (bestCurrentCategory === 'full-house' && bestCurrentScore === 25) ||
+                    (bestCurrentCategory === 'small-straight' && bestCurrentScore === 30)) {
+                    console.log(`${player.name} keeps all dice for ${bestCurrentCategory} (${bestCurrentScore} points)`);
+                    return [true, true, true, true, true];
+                }
+                
+                if (strategy.needUpperSection) {
+                    return this.holdForUpperSection(strategy.priorityNumbers, counts);
+                }
+                if (strategy.needYahtzee) {
+                    return this.holdForYahtzee(counts);
+                }
+                if (strategy.needStraights) {
+                    return this.holdForStraights();
+                }
+                if (strategy.needFullHouse) {
+                    return this.holdForFullHouse(counts);
+                }
+                if (strategy.needMultiples) {
+                    return this.holdForMultiples(counts);
+                }
+                
+                return this.holdBasicStrategy(counts);
+            }
+
+            aggressiveStrategy(player, availableCategories, counts) {
+                console.log(`${player.name} using aggressive strategy - going for high-value categories!`);
+                
+                // Always go for Yahtzee if possible
+                if (availableCategories.includes('yahtzee')) {
+                    return this.holdForYahtzee(counts);
+                }
+                
+                // Prefer straights and full house over safe choices
+                if (availableCategories.includes('large-straight') || availableCategories.includes('small-straight')) {
+                    return this.holdForStraights();
+                }
+                
+                if (availableCategories.includes('full-house')) {
+                    return this.holdForFullHouse(counts);
+                }
+                
+                // Otherwise hold for multiples
+                return this.holdForMultiples(counts);
+            }
+
+            conservativeStrategy(player, availableCategories, counts) {
+                console.log(`${player.name} using conservative strategy - playing it safe!`);
+                
+                // Always take guaranteed scores
+                const guaranteedScores = availableCategories.filter(cat => this.scoreCategory(cat) > 0);
+                if (guaranteedScores.length > 0) {
+                    // Hold everything if we have a decent score
+                    const bestScore = Math.max(...guaranteedScores.map(cat => this.scoreCategory(cat)));
+                    if (bestScore >= 15) {
+                        return [true, true, true, true, true];
+                    }
+                }
+                
+                // Focus on upper section for bonus
+                const strategy = this.analyzeScoreCardNeeds(availableCategories, player);
+                if (strategy.needUpperSection) {
+                    return this.holdForUpperSection(strategy.priorityNumbers, counts);
+                }
+                
+                // Hold pairs and multiples (safe choices)
+                return this.holdBasicStrategy(counts);
+            }
+
+            randomStrategy(counts) {
+                console.log('Wild Wendy using random strategy - anything can happen!');
+                
+                const newHeldDice = [false, false, false, false, false];
+                
+                // Randomly decide for each die (30% chance to hold each)
+                for (let i = 0; i < 5; i++) {
+                    newHeldDice[i] = Math.random() < 0.3;
+                }
+                
+                return newHeldDice;
+            }
+
+            analyzeScoreCardNeeds(availableCategories, player) {
+                const upperCategories = ['ones', 'twos', 'threes', 'fours', 'fives', 'sixes'];
+                const availableUpper = availableCategories.filter(cat => upperCategories.includes(cat));
+                
+                // Calculate current upper section total for the specific player
+                let currentUpperTotal = 0;
+                upperCategories.forEach(cat => {
+                    if (player.scorecard[cat] !== undefined) {
+                        currentUpperTotal += player.scorecard[cat];
+                    }
+                });
+                
+                const needsUpperBonus = currentUpperTotal < 63 && availableUpper.length > 0;
+                
+                return {
+                    needUpperSection: needsUpperBonus,
+                    priorityNumbers: needsUpperBonus ? [4, 5, 6] : [1, 2, 3], // Focus on high numbers for bonus
+                    needYahtzee: availableCategories.includes('yahtzee'),
+                    needStraights: availableCategories.includes('small-straight') || availableCategories.includes('large-straight'),
+                    needFullHouse: availableCategories.includes('full-house'),
+                    needMultiples: availableCategories.includes('three-of-a-kind') || availableCategories.includes('four-of-a-kind'),
+                    upperSectionProgress: currentUpperTotal,
+                    remainingUpperCategories: availableUpper
+                };
+            }
+
+            holdForUpperSection(priorityNumbers, counts) {
+                const newHeldDice = [false, false, false, false, false];
+                
+                // Prioritize keeping high-value numbers (4, 5, 6) for upper section bonus
+                priorityNumbers.forEach(num => {
+                    if (counts[num] >= 1) {
+                        this.dice.forEach((die, index) => {
+                            if (die === num) {
+                                newHeldDice[index] = true;
+                            }
+                        });
+                    }
+                });
+                
+                console.log(`AI holding for upper section, prioritizing: ${priorityNumbers.join(', ')}`);
+                return newHeldDice;
+            }
+
+            holdForYahtzee(counts) {
+                const newHeldDice = [false, false, false, false, false];
+                
+                // Find the number with the most occurrences
+                let maxCount = 0;
+                let maxValue = 0;
+                
+                Object.entries(counts).forEach(([value, count]) => {
+                    if (count > maxCount) {
+                        maxCount = count;
+                        maxValue = parseInt(value);
+                    }
+                });
+                
+                // Hold all dice of the most frequent value
+                if (maxCount >= 2) {
+                    this.dice.forEach((die, index) => {
+                        if (die === maxValue) {
+                            newHeldDice[index] = true;
+                        }
+                    });
+                    console.log(`AI holding ${maxCount} ${maxValue}s for Yahtzee potential`);
+                }
+                
+                return newHeldDice;
+            }
+
+            holdForStraights() {
+                const newHeldDice = [false, false, false, false, false];
+                const uniqueDice = [...new Set(this.dice)].sort((a, b) => a - b);
+                
+                // Look for consecutive sequences
+                let longestSequence = [];
+                let currentSequence = [uniqueDice[0]];
+                
+                for (let i = 1; i < uniqueDice.length; i++) {
+                    if (uniqueDice[i] === uniqueDice[i-1] + 1) {
+                        currentSequence.push(uniqueDice[i]);
+                    } else {
+                        if (currentSequence.length > longestSequence.length) {
+                            longestSequence = [...currentSequence];
+                        }
+                        currentSequence = [uniqueDice[i]];
+                    }
+                }
+                
+                if (currentSequence.length > longestSequence.length) {
+                    longestSequence = [...currentSequence];
+                }
+                
+                // Hold dice that are part of the longest sequence
+                if (longestSequence.length >= 3) {
+                    this.dice.forEach((die, index) => {
+                        if (longestSequence.includes(die)) {
+                            newHeldDice[index] = true;
+                        }
+                    });
+                    console.log(`AI holding straight sequence: ${longestSequence.join(', ')}`);
+                }
+                
+                return newHeldDice;
+            }
+
+            holdForFullHouse(counts) {
+                const newHeldDice = [false, false, false, false, false];
+                
+                let threeOfAKind = null;
+                let pair = null;
+                
+                Object.entries(counts).forEach(([value, count]) => {
+                    if (count >= 3 && !threeOfAKind) {
+                        threeOfAKind = parseInt(value);
+                    } else if (count >= 2 && !pair) {
+                        pair = parseInt(value);
+                    }
+                });
+                
+                // Hold three of a kind and pairs for full house
+                if (threeOfAKind) {
+                    this.dice.forEach((die, index) => {
+                        if (die === threeOfAKind) {
+                            newHeldDice[index] = true;
+                        }
+                    });
+                }
+                
+                if (pair && pair !== threeOfAKind) {
+                    this.dice.forEach((die, index) => {
+                        if (die === pair && !newHeldDice[index]) {
+                            newHeldDice[index] = true;
+                        }
+                    });
+                }
+                
+                console.log(`AI holding for Full House: ${threeOfAKind ? threeOfAKind + 's' : 'none'} and ${pair ? pair + 's' : 'none'}`);
+                return newHeldDice;
+            }
+
+            holdForMultiples(counts) {
+                const newHeldDice = [false, false, false, false, false];
+                
+                // Hold any multiples (pairs, three-of-a-kind, etc.)
+                Object.entries(counts).forEach(([value, count]) => {
+                    if (count >= 2) {
+                        this.dice.forEach((die, index) => {
+                            if (die == value) {
+                                newHeldDice[index] = true;
+                            }
+                        });
+                    }
+                });
+                
+                console.log(`AI holding multiples for Three/Four of a Kind`);
+                return newHeldDice;
+            }
+
+            holdBasicStrategy(counts) {
+                const newHeldDice = [false, false, false, false, false];
+                
+                // Hold pairs first
+                Object.entries(counts).forEach(([value, count]) => {
+                    if (count >= 2) {
+                        this.dice.forEach((die, index) => {
+                            if (die == value) {
+                                newHeldDice[index] = true;
+                            }
+                        });
+                    }
+                });
+                
+                // If no pairs, hold high dice (5s and 6s)
+                if (!newHeldDice.some(held => held)) {
+                    this.dice.forEach((die, index) => {
+                        if (die >= 5) {
+                            newHeldDice[index] = true;
+                        }
+                    });
+                    console.log(`AI holding high dice (5s and 6s)`);
+                } else {
+                    console.log(`AI holding pairs/multiples`);
+                }
+                
+                return newHeldDice;
+            }
+
+            async llmDecideHold(player) {
+                if (!this.useLLM) {
+                    return this.autoPlayDecideHold(player); // Fallback to traditional AI
+                }
+
+                try {
+                    const availableCategories = this.getAvailableCategories(player);
+                    const currentScores = this.formatScorecard(player);
+                    
+                    const diceAnalysis = this.analyzeDiceForLLM();
+                    const prompt = `You are ${player.name}, an AI Yahtzee player with ${player.strategy} strategy.
+
+CURRENT DICE: [${this.dice.join(', ')}]
+DICE POSITIONS: [Position 1: ${this.dice[0]}, Position 2: ${this.dice[1]}, Position 3: ${this.dice[2]}, Position 4: ${this.dice[3]}, Position 5: ${this.dice[4]}]
+TURN: ${this.turn}/3
+PLAYER PERSONALITY: ${this.getPlayerPersonality(player)}
+
+DICE ANALYSIS:
+${diceAnalysis}
+
+CURRENT SCORECARD STATUS:
+${currentScores}
+
+AVAILABLE CATEGORIES: ${availableCategories.join(', ')}
+
+Based on the dice roll, your current scorecard, and your personality, decide which dice to hold for the next roll.
+
+DETAILED STRATEGIC ANALYSIS:
+
+STRAIGHT STRATEGY (Most Important):
+- Small Straight Examples: If you have [1,2,3,6,6], hold 1-2-3 and try for 4 or 5
+- Large Straight Examples: If you have [2,3,4,5,1], hold all five - you have large straight!
+- BAD Straight Attempts: Never chase straights with gaps like [1,1,3,5,6] - pivot to pairs instead
+- Turn 1: Chase straights if you have 3+ consecutive numbers
+- Turn 2: Only chase straights if you have 4 consecutive (small) or very close to large straight
+- Turn 3: Don't chase straights unless you're 1 number away
+
+MULTIPLES STRATEGY:
+- 4+ of a kind: ALWAYS hold all matching dice (Yahtzee=50 pts vs Four of a Kind)
+- 3 of a kind: Hold all three, try for fourth
+- Pairs: Good for Full House, but abandon if better options exist
+- Multiple pairs: Excellent for Full House potential
+
+UPPER SECTION STRATEGY:
+- Need 63+ total for 35 bonus points (average 10.5 per category)
+- Priority order when needing upper section: 6s > 5s > 4s > 3s > 2s > 1s
+- If behind on upper section and have good 4s/5s/6s, prioritize those
+- Don't chase upper section if you already have 63+ points
+
+TURN-SPECIFIC STRATEGY:
+- Turn 1: Be aggressive, chase high-value combinations
+- Turn 2: Be more selective, focus on achievable goals
+- Turn 3: Be realistic, don't chase impossible combinations
+
+SPECIFIC EXAMPLES:
+- [1,2,3,4,6]: Hold 1-2-3-4 (small straight guaranteed!) 
+- [2,3,4,5,5]: Hold 2-3-4-5 (small straight + chance for large)
+- [1,3,4,5,6]: Hold 3-4-5 only if desperate for straights, otherwise hold 5-6 for chance
+- [4,4,4,2,6]: Hold all three 4s (go for four of a kind or keep for three of a kind)
+- [1,1,5,6,6]: Hold 5-6-6 or 1-1 depending on scorecard needs
+
+CRITICAL: Always consider what categories you still need vs. what's realistically achievable with remaining rolls.
+
+Respond with ONLY a JSON object in this exact format:
+{
+  "hold": [true, false, true, false, false],
+  "reasoning": "Brief explanation of why you're holding these dice"
+}
+
+CRITICAL INSTRUCTIONS FOR THE "hold" ARRAY:
+- The array must have exactly 5 boolean values (true/false)
+- Position 1 (index 0) = true means hold the first die, false means reroll it
+- Position 2 (index 1) = true means hold the second die, false means reroll it
+- And so on for all 5 positions
+
+EXAMPLE: If dice are [1,3,3,1,5] and you want to hold both 1s and both 3s:
+- Position 1: die=1, hold=true
+- Position 2: die=3, hold=true  
+- Position 3: die=3, hold=true
+- Position 4: die=1, hold=true
+- Position 5: die=5, hold=false
+- Answer: {"hold": [true, true, true, true, false], "reasoning": "Holding both pairs (1s and 3s)"}
+
+ANOTHER EXAMPLE: If dice are [1,2,3,4,5] and you want to hold 1-2-3 consecutive:
+- Position 1: die=1, hold=true (holding the 1)
+- Position 2: die=2, hold=true (holding the 2)
+- Position 3: die=3, hold=true (holding the 3)
+- Position 4: die=4, hold=false (not holding the 4)
+- Position 5: die=5, hold=false (not holding the 5)
+- Answer: {"hold": [true, true, true, false, false], "reasoning": "Holding consecutive numbers 1-2-3"}
+
+⚠️ CRITICAL: Your hold array MUST match exactly what you say in your reasoning!`;
+
+                    console.log(`${player.name} Dice for analysis: [${this.dice.join(', ')}]`);
+                    console.log(`${player.name} Dice positions: ${this.dice.map((die, i) => `pos${i+1}=${die}`).join(', ')}`);
+
+                    const response = await this.callOpenAI(prompt, 200);
+                    console.log(`${player.name} LLM response:`, response);
+                    
+                    const decision = JSON.parse(response);
+                    console.log(`${player.name} LLM decision: ${decision.reasoning}`);
+                    console.log(`${player.name} LLM wants to hold:`, decision.hold);
+                    console.log(`${player.name} Current dice:`, this.dice);
+                    
+                    // Validate the hold array
+                    if (!Array.isArray(decision.hold) || decision.hold.length !== 5) {
+                        console.error(`🚫 Invalid hold array from ${player.name}:`, decision.hold);
+                        return this.autoPlayDecideHold(player); // Fallback
+                    }
+                    
+                    // Show what will actually be held
+                    const heldDice = this.dice.filter((die, index) => decision.hold[index]);
+                    const notHeldDice = this.dice.filter((die, index) => !decision.hold[index]);
+                    console.log(`${player.name} Will hold: [${heldDice.join(', ')}]`);
+                    console.log(`${player.name} Will reroll: [${notHeldDice.join(', ')}]`);
+                    
+                    // Validate reasoning consistency
+                    const inconsistency = this.validateHoldConsistency(decision.reasoning, decision.hold, this.dice);
+                    if (inconsistency) {
+                        console.warn(`🚨 ${player.name} INCONSISTENCY: ${inconsistency}`);
+                    }
+                    
+                    // Show reasoning in UI with actual dice being held
+                    let enhancedReasoning = `${decision.reasoning}\n\n🎲 Actually holding: [${heldDice.join(', ')}]\n🔄 Will reroll: [${notHeldDice.join(', ')}]`;
+                    if (inconsistency) {
+                        enhancedReasoning += `\n\n⚠️ INCONSISTENCY DETECTED: ${inconsistency}`;
+                    }
+                    this.showAIReasoning(player, `🎲 Dice Hold Decision (Turn ${this.turn})`, enhancedReasoning);
+                    
+                    return decision.hold;
+                } catch (error) {
+                    console.error(`LLM decision failed for ${player.name}, using fallback:`, error);
+                    return this.autoPlayDecideHold(player); // Fallback to traditional AI
+                }
+            }
+
+            async llmChooseCategory(player) {
+                if (!this.useLLM) {
+                    return this.autoPlayChooseCategory(player); // Fallback to traditional AI
+                }
+
+                try {
+                    const availableCategories = this.getAvailableCategories(player);
+                    const currentScores = this.formatScorecard(player);
+                    const possibleScores = {};
+                    
+                    availableCategories.forEach(category => {
+                        possibleScores[category] = this.scoreCategory(category);
+                    });
+
+                    const diceAnalysis = this.analyzeDiceForLLM();
+                    const prompt = `You are ${player.name}, an AI Yahtzee player with ${player.strategy} strategy.
+
+🎯 AVAILABLE CATEGORIES (ONLY THESE CAN BE CHOSEN):
+${Object.entries(possibleScores).map(([cat, score]) => `✅ ${cat}: ${score} points`).join('\n')}
+
+FINAL DICE: [${this.dice.join(', ')}]
+PLAYER PERSONALITY: ${this.getPlayerPersonality(player)}
+
+DICE ANALYSIS:
+${diceAnalysis}
+
+CURRENT SCORECARD STATUS:
+${currentScores}
+
+Based on your final dice roll, current scorecard, and personality, choose which category to score.
+
+CRITICAL STRATEGIC RULES:
+1. NEVER use Yahtzee (5 of a kind) for anything other than the "yahtzee" category (50 points)
+2. NEVER use Four of a Kind for "three-of-a-kind" when "four-of-a-kind" is available
+3. NEVER use Full House for "three-of-a-kind" when "full-house" is available (25 points)
+4. NEVER use Large Straight for "small-straight" when "large-straight" is available (40 points)
+5. Always prioritize the highest-scoring category that matches your dice
+6. Consider upper section bonus (need 63+ points in upper section for 35 bonus points)
+
+ADVANCED STRATEGIC DECISION MAKING:
+
+STRAIGHT RECOGNITION:
+- Small Straight: 1-2-3-4, 2-3-4-5, or 3-4-5-6 (can have extra dice)
+- Large Straight: EXACTLY 1-2-3-4-5 or 2-3-4-5-6 (no duplicates)
+- Example: [1,2,3,4,4] = Small Straight (30 pts), NOT Large Straight
+- Example: [2,3,4,5,6] = Large Straight (40 pts)
+
+UPPER SECTION BONUS MATH:
+- Need 63+ points across ones through sixes for 35 bonus
+- That's 10.5 average per category (3+ of each number)
+- Late game: If you have 45+ upper section points, prioritize filling upper section
+- If you have < 30 upper section points with few categories left, bonus is unlikely
+
+GAME SITUATION ANALYSIS:
+- Early game (rounds 1-4): Prioritize high-value categories (Yahtzee, Large Straight, Full House)
+- Mid game (rounds 5-9): Balance high-value categories with upper section needs
+- Late game (rounds 10-13): Take guaranteed points, avoid zeros if possible
+
+SPECIFIC DECISION EXAMPLES:
+- If dice = [4,4,4,4,4]: ALWAYS choose "yahtzee" (50 pts) not "fours" (20 pts)
+- If dice = [1,2,3,4,5]: ALWAYS choose "large-straight" (40 pts) not "small-straight" (30 pts)
+- If dice = [3,3,3,6,6]: Choose "full-house" (25 pts) over "three-of-a-kind" (21 pts)
+- If dice = [2,2,4,5,6]: If you need upper section, choose "twos" (4 pts), otherwise "chance" (19 pts)
+
+ZERO STRATEGY:
+- Sometimes taking a zero in a low-value category preserves high-value categories
+- Better to zero "ones" than waste a full house on "three-of-a-kind"
+- Never zero high-value categories unless absolutely necessary
+
+SCORING HIERARCHY (choose the highest available that makes strategic sense):
+1. Yahtzee (50 pts) - ABSOLUTE PRIORITY
+2. Large Straight (40 pts) - Second highest fixed value
+3. Small Straight (30 pts) - Third highest fixed value  
+4. Full House (25 pts) - Fourth highest fixed value
+5. Four of a Kind (sum of all dice) - Variable, can be 20-30 pts
+6. Three of a Kind (sum of all dice) - Variable, can be 15-30 pts
+7. Upper Section (if needed for bonus) - Strategic value depends on bonus potential
+8. Chance (sum of all dice) - Fallback category
+9. Consider zeros in low categories to preserve high-value options
+
+Respond with ONLY a JSON object in this exact format:
+{
+  "category": "chosen-category",
+  "reasoning": "Brief explanation of why you chose this category"
+}
+
+⚠️ CRITICAL CONSTRAINT: The category must be exactly one of these AVAILABLE categories: ${availableCategories.join(', ')}
+
+🚫 DO NOT choose any category not in the above list - those are already filled!`;
+
+                    console.log(`${player.name} Available Categories:`, availableCategories);
+                    console.log(`${player.name} Possible Scores:`, possibleScores);
+                    
+                    const response = await this.callOpenAI(prompt, 200);
+                    console.log(`${player.name} LLM category response:`, response);
+                    
+                    const decision = JSON.parse(response);
+                    console.log(`${player.name} LLM category choice: ${decision.reasoning}`);
+                    
+                    // First validate that the category is actually available
+                    if (!availableCategories.includes(decision.category)) {
+                        console.error(`🚫 ${player.name} chose invalid category '${decision.category}' - not in available list: [${availableCategories.join(', ')}]`);
+                        console.error(`🚫 Player scorecard:`, player.scorecard);
+                        decision.category = availableCategories[0]; // Force to first available
+                        decision.reasoning += ` [ERROR: AI chose unavailable category, forced to ${decision.category}]`;
+                    }
+                    
+                    // Then validate for strategic mistakes
+                    const validatedCategory = this.validateCategoryChoice(decision.category, possibleScores, availableCategories);
+                    
+                    let finalReasoning = decision.reasoning;
+                    if (validatedCategory !== decision.category) {
+                        console.log(`⚠️ ${player.name} choice corrected from ${decision.category} to ${validatedCategory} to prevent strategic error`);
+                        finalReasoning += ` [CORRECTED: System changed choice from ${decision.category} to ${validatedCategory} to prevent strategic error]`;
+                    }
+                    
+                    // Show reasoning in UI
+                    this.showAIReasoning(player, `🎯 Category Selection: ${validatedCategory} (${possibleScores[validatedCategory]} pts)`, finalReasoning);
+                    
+                    return {
+                        category: validatedCategory,
+                        score: possibleScores[validatedCategory]
+                    };
+                } catch (error) {
+                    console.error(`LLM category choice failed for ${player.name}, using fallback:`, error);
+                    return this.autoPlayChooseCategory(player); // Fallback to traditional AI
+                }
+            }
+
+            getPlayerPersonality(player) {
+                const personalities = {
+                    'llm-strategic': 'You are highly analytical and make optimal strategic decisions. You carefully consider long-term scoring potential and upper section bonus.',
+                    'llm-aggressive': 'You are a risk-taker who goes for high-value categories like Yahtzee, straights, and full house. You prefer big scores over safe plays.',
+                    'llm-conservative': 'You prefer guaranteed points and safe plays. You avoid risky moves and focus on consistent scoring, especially in the upper section.',
+                    'random': 'You make random decisions without much strategy.'
+                };
+                return personalities[player.strategy] || 'You play with balanced strategy.';
+            }
+
+            analyzeDiceForLLM() {
+                const sorted = [...this.dice].sort((a, b) => a - b);
+                const counts = {};
+                this.dice.forEach(die => counts[die] = (counts[die] || 0) + 1);
+                
+                let analysis = `Sorted dice: [${sorted.join(', ')}]\n`;
+                
+                // Count analysis
+                const pairs = Object.entries(counts).filter(([_, count]) => count === 2);
+                const threes = Object.entries(counts).filter(([_, count]) => count === 3);
+                const fours = Object.entries(counts).filter(([_, count]) => count >= 4);
+                const fives = Object.entries(counts).filter(([_, count]) => count === 5);
+                
+                if (fives.length > 0) {
+                    analysis += `🎯 YAHTZEE! Five ${fives[0][0]}s - 50 points guaranteed!\n`;
+                } else if (fours.length > 0) {
+                    analysis += `🎲 Four of a Kind: Four ${fours[0][0]}s (potential Yahtzee!)\n`;
+                } else if (threes.length > 0) {
+                    analysis += `🎯 Three of a Kind: Three ${threes[0][0]}s\n`;
+                } else if (pairs.length === 2) {
+                    analysis += `🎲 Two Pairs: ${pairs.map(p => p[0]).join(' and ')} (Full House potential!)\n`;
+                } else if (pairs.length === 1) {
+                    analysis += `🎯 One Pair: ${pairs[0][0]}s\n`;
+                }
+                
+                // Straight analysis
+                const unique = [...new Set(this.dice)].sort((a, b) => a - b);
+                let consecutiveCount = 1;
+                let maxConsecutive = 1;
+                let consecutiveStart = unique[0];
+                
+                for (let i = 1; i < unique.length; i++) {
+                    if (unique[i] === unique[i-1] + 1) {
+                        consecutiveCount++;
+                        if (consecutiveCount > maxConsecutive) {
+                            maxConsecutive = consecutiveCount;
+                            consecutiveStart = unique[i - consecutiveCount + 1];
+                        }
+                    } else {
+                        consecutiveCount = 1;
+                    }
+                }
+                
+                if (maxConsecutive >= 5) {
+                    analysis += `🌟 LARGE STRAIGHT! [${consecutiveStart}-${consecutiveStart+4}] - 40 points!\n`;
+                } else if (maxConsecutive >= 4) {
+                    analysis += `✨ SMALL STRAIGHT! [${consecutiveStart}-${consecutiveStart+3}] - 30 points!\n`;
+                } else if (maxConsecutive === 3) {
+                    analysis += `📈 Three consecutive numbers [${consecutiveStart}-${consecutiveStart+2}] - chase straight?\n`;
+                } else {
+                    analysis += `❌ No straight potential - gaps in sequence\n`;
+                }
+                
+                // Full house analysis
+                if (threes.length === 1 && pairs.length === 1) {
+                    analysis += `🏠 FULL HOUSE! ${threes[0][0]}s and ${pairs[0][0]}s - 25 points!\n`;
+                }
+                
+                return analysis;
+            }
+
+            validateHoldConsistency(reasoning, holdArray, dice) {
+                const heldDice = dice.filter((die, index) => holdArray[index]);
+                const heldSet = new Set(heldDice);
+                const heldCounts = {};
+                heldDice.forEach(die => heldCounts[die] = (heldCounts[die] || 0) + 1);
+                
+                const reasoningLower = reasoning.toLowerCase();
+                
+                // Check for specific claims in reasoning
+                if (reasoningLower.includes('consecutive') || reasoningLower.includes('straight')) {
+                    // Check if held dice are actually consecutive
+                    const sortedHeld = [...heldSet].sort((a, b) => a - b);
+                    let isConsecutive = true;
+                    for (let i = 1; i < sortedHeld.length; i++) {
+                        if (sortedHeld[i] !== sortedHeld[i-1] + 1) {
+                            isConsecutive = false;
+                            break;
+                        }
+                    }
+                    if (!isConsecutive && sortedHeld.length > 1) {
+                        return `Claims consecutive numbers but holding [${heldDice.join(', ')}] which are not consecutive`;
+                    }
+                }
+                
+                // Check for specific numbers mentioned
+                for (let i = 1; i <= 6; i++) {
+                    const numStr = i.toString();
+                    if (reasoningLower.includes(`${numStr}s`) || reasoningLower.includes(`${numStr}-`)) {
+                        const diceHasNumber = dice.includes(i);
+                        const holdingNumber = heldDice.includes(i);
+                        const countInDice = dice.filter(d => d === i).length;
+                        const countHeld = heldDice.filter(d => d === i).length;
+                        
+                        if (diceHasNumber && !holdingNumber) {
+                            return `Claims to hold ${numStr}s but not actually holding any ${numStr}s`;
+                        }
+                        
+                        if (reasoningLower.includes(`both ${numStr}s`) && countInDice === 2 && countHeld !== 2) {
+                            return `Claims to hold both ${numStr}s but only holding ${countHeld} of ${countInDice}`;
+                        }
+                    }
+                }
+                
+                // Check for pair claims
+                if (reasoningLower.includes('pair') || reasoningLower.includes('two ')) {
+                    const pairs = Object.entries(heldCounts).filter(([_, count]) => count === 2);
+                    if (reasoningLower.includes('both pairs') || reasoningLower.includes('two pairs')) {
+                        const allPairs = Object.entries(dice.reduce((acc, die) => {
+                            acc[die] = (acc[die] || 0) + 1;
+                            return acc;
+                        }, {})).filter(([_, count]) => count === 2);
+                        
+                        if (allPairs.length === 2 && pairs.length !== 2) {
+                            return `Claims to hold both pairs but only holding ${pairs.length} pairs`;
+                        }
+                    }
+                }
+                
+                return null; // No inconsistency found
+            }
+
+            formatScorecard(player) {
+                const allCategories = ['ones', 'twos', 'threes', 'fours', 'fives', 'sixes',
+                                     'three-of-a-kind', 'four-of-a-kind', 'full-house',
+                                     'small-straight', 'large-straight', 'yahtzee', 'chance'];
+                
+                const filled = [];
+                const empty = [];
+                let upperTotal = 0;
+                
+                allCategories.forEach(category => {
+                    if (player.scorecard[category] !== undefined) {
+                        filled.push(`${category}: ${player.scorecard[category]}`);
+                        if (['ones', 'twos', 'threes', 'fours', 'fives', 'sixes'].includes(category)) {
+                            upperTotal += player.scorecard[category];
+                        }
+                    } else {
+                        empty.push(category);
+                    }
+                });
+                
+                const result = `SCORECARD STATUS:
+================
+
+FILLED CATEGORIES (CANNOT BE USED AGAIN):
+${filled.length > 0 ? filled.join('\n') : 'None yet'}
+
+AVAILABLE CATEGORIES (CAN BE USED):
+${empty.length > 0 ? empty.join(', ') : 'None remaining'}
+
+UPPER SECTION PROGRESS: ${upperTotal}/63 (need 63 for 35 bonus points)
+CATEGORIES REMAINING: ${empty.length}/13
+
+⚠️ IMPORTANT: You can ONLY choose from the AVAILABLE CATEGORIES listed above!`;
+                
+                return result;
+            }
+
+            showAIReasoning(player, action, reasoning) {
+                const reasoningArea = document.getElementById('ai-reasoning');
+                const reasoningContent = document.getElementById('reasoning-content');
+                
+                // Show the reasoning area
+                reasoningArea.style.display = 'block';
+                
+                // Create new reasoning entry
+                const entry = document.createElement('div');
+                entry.className = 'reasoning-entry';
+                
+                const playerDiv = document.createElement('div');
+                playerDiv.className = 'reasoning-player';
+                playerDiv.textContent = player.name;
+                
+                const actionDiv = document.createElement('div');
+                actionDiv.className = 'reasoning-action';
+                actionDiv.textContent = action;
+                
+                const reasoningDiv = document.createElement('div');
+                reasoningDiv.className = 'reasoning-text';
+                reasoningDiv.textContent = reasoning;
+                
+                entry.appendChild(playerDiv);
+                entry.appendChild(actionDiv);
+                entry.appendChild(reasoningDiv);
+                
+                // Add to content (prepend to show most recent first)
+                reasoningContent.insertBefore(entry, reasoningContent.firstChild);
+                
+                // Limit to last 10 entries to prevent overflow
+                while (reasoningContent.children.length > 10) {
+                    reasoningContent.removeChild(reasoningContent.lastChild);
+                }
+                
+                // Scroll to top to show latest reasoning
+                reasoningContent.scrollTop = 0;
+            }
+
+            clearAIReasoning() {
+                const reasoningContent = document.getElementById('reasoning-content');
+                reasoningContent.innerHTML = '';
+                const reasoningArea = document.getElementById('ai-reasoning');
+                reasoningArea.style.display = 'none';
+            }
+
+            validateCategoryChoice(chosenCategory, possibleScores, availableCategories) {
+                // Ensure the category is actually available
+                if (!availableCategories.includes(chosenCategory)) {
+                    console.log(`⚠️ Invalid category ${chosenCategory}, choosing best available instead`);
+                    return this.getBestCategory(possibleScores, availableCategories);
+                }
+                
+                // Check for strategic mistakes and auto-correct them
+                const currentScore = possibleScores[chosenCategory];
+                
+                // Rule 1: Never use Yahtzee for anything other than yahtzee category
+                if (this.isYahtzee() && chosenCategory !== 'yahtzee' && availableCategories.includes('yahtzee')) {
+                    return 'yahtzee';
+                }
+                
+                // Rule 2: Never use Four of a Kind for three-of-a-kind when four-of-a-kind is available
+                if (this.isFourOfAKind() && chosenCategory === 'three-of-a-kind' && availableCategories.includes('four-of-a-kind')) {
+                    return 'four-of-a-kind';
+                }
+                
+                // Rule 3: Never use Full House for three-of-a-kind when full-house is available
+                if (this.isFullHouse() && chosenCategory === 'three-of-a-kind' && availableCategories.includes('full-house')) {
+                    return 'full-house';
+                }
+                
+                // Rule 4: Never use Large Straight for small-straight when large-straight is available
+                if (this.isLargeStraight() && chosenCategory === 'small-straight' && availableCategories.includes('large-straight')) {
+                    return 'large-straight';
+                }
+                
+                // Rule 5: Don't choose categories that score 0 when better options exist
+                if (currentScore === 0) {
+                    const betterOptions = availableCategories.filter(cat => possibleScores[cat] > 0);
+                    if (betterOptions.length > 0) {
+                        return this.getBestCategory(possibleScores, betterOptions);
+                    }
+                }
+                
+                return chosenCategory; // Choice is valid
+            }
+
+            getBestCategory(possibleScores, availableCategories) {
+                let bestCategory = availableCategories[0];
+                let bestScore = possibleScores[bestCategory];
+                
+                availableCategories.forEach(category => {
+                    if (possibleScores[category] > bestScore) {
+                        bestScore = possibleScores[category];
+                        bestCategory = category;
+                    }
+                });
+                
+                return bestCategory;
+            }
+
+            isFourOfAKind() {
+                const counts = {};
+                this.dice.forEach(die => counts[die] = (counts[die] || 0) + 1);
+                return Math.max(...Object.values(counts)) >= 4;
+            }
+
+            isFullHouse() {
+                const counts = {};
+                this.dice.forEach(die => counts[die] = (counts[die] || 0) + 1);
+                const countValues = Object.values(counts).sort();
+                return (countValues.length === 2 && countValues[0] === 2 && countValues[1] === 3);
+            }
+
+            isLargeStraight() {
+                const uniqueDice = [...new Set(this.dice)].sort((a, b) => a - b);
+                const largeStraights = [[1,2,3,4,5], [2,3,4,5,6]];
+                return largeStraights.some(straight => 
+                    straight.every(num => uniqueDice.includes(num)) && uniqueDice.length === 5);
+            }
+
+            autoPlayChooseCategory(player) {
+                const availableCategories = this.getAvailableCategories(player);
+                const scores = {};
+                
+                // Calculate scores for all available categories
+                availableCategories.forEach(category => {
+                    scores[category] = this.scoreCategory(category);
+                });
+                
+                console.log(`${player.name} - Available category scores:`, scores);
+                
+                // Strategic category selection with priorities
+                const strategy = this.analyzeScoreCardNeeds(availableCategories, player);
+                
+                // 1. Always take high-value categories when available
+                const highValueCategories = ['yahtzee', 'large-straight', 'full-house'];
+                for (let category of highValueCategories) {
+                    if (availableCategories.includes(category) && scores[category] > 0) {
+                        console.log(`${player.name} prioritizes high-value category: ${category} (${scores[category]} points)`);
+                        return {category: category, score: scores[category]};
+                    }
+                }
+                
+                // 2. If we need upper section bonus, prioritize upper section when scores are decent
+                if (strategy.needUpperSection && strategy.upperSectionProgress < 63) {
+                    const upperCategories = ['sixes', 'fives', 'fours', 'threes', 'twos', 'ones'];
+                    for (let category of upperCategories) {
+                        if (availableCategories.includes(category)) {
+                            const score = scores[category];
+                            const minAcceptableScore = this.getMinAcceptableUpperScore(category);
+                            
+                            if (score >= minAcceptableScore) {
+                                console.log(`${player.name} takes ${category} for upper section: ${score} points (min: ${minAcceptableScore})`);
+                                return {category: category, score: score};
+                            }
+                        }
+                    }
+                }
+                
+                // 3. Take any category with good score
+                let bestCategory = null;
+                let bestScore = -1;
+                
+                availableCategories.forEach(category => {
+                    const score = scores[category];
+                    const minAcceptable = this.getMinAcceptableScore(category);
+                    
+                    if (score >= minAcceptable && score > bestScore) {
+                        bestScore = score;
+                        bestCategory = category;
+                    }
+                });
+                
+                if (bestCategory) {
+                    console.log(`${player.name} takes best available: ${bestCategory} (${bestScore} points)`);
+                    return {category: bestCategory, score: bestScore};
+                }
+                
+                // 4. Fallback: Take the category with the highest score, even if low
+                bestCategory = availableCategories[0];
+                bestScore = scores[bestCategory];
+                
+                availableCategories.forEach(category => {
+                    if (scores[category] > bestScore) {
+                        bestScore = scores[category];
+                        bestCategory = category;
+                    }
+                });
+                
+                console.log(`${player.name} forced to take: ${bestCategory} (${bestScore} points)`);
+                return {category: bestCategory, score: bestScore};
+            }
+
+            getMinAcceptableUpperScore(category) {
+                // Minimum acceptable scores for upper section categories
+                const minimums = {
+                    'ones': 2,    // At least 2 ones
+                    'twos': 4,    // At least 2 twos  
+                    'threes': 6,  // At least 2 threes
+                    'fours': 8,   // At least 2 fours
+                    'fives': 10,  // At least 2 fives
+                    'sixes': 12   // At least 2 sixes
+                };
+                return minimums[category] || 0;
+            }
+
+            getMinAcceptableScore(category) {
+                // Minimum scores worth taking for each category
+                const minimums = {
+                    'ones': 2, 'twos': 4, 'threes': 6, 'fours': 8, 'fives': 10, 'sixes': 12,
+                    'three-of-a-kind': 15,
+                    'four-of-a-kind': 20,
+                    'full-house': 25,
+                    'small-straight': 30,
+                    'large-straight': 40,
+                    'yahtzee': 50,
+                    'chance': 15
+                };
+                return minimums[category] || 0;
+            }
+
+            async startMultiPlayerAutoPlay() {
+                if (this.isAutoPlaying) return;
+                
+                this.isAutoPlaying = true;
+                this.currentRound = 0;
+                
+                const autoPlayBtn = document.getElementById('auto-play-btn');
+                autoPlayBtn.textContent = '⏸️ Stop Battle';
+                autoPlayBtn.onclick = () => this.stopAutoPlay();
+                
+                // Reset all player scorecards
+                this.players.forEach(player => {
+                    player.scorecard = {};
+                    player.currentRound = 0;
+                });
+                this.initializeScoreCards();
+                
+                // Clear previous AI reasoning
+                this.clearAIReasoning();
+                
+                console.log('Starting multi-player auto-play with 4 AI players');
+                
+                // Play 13 rounds (complete game)
+                for (let round = 0; round < 13 && this.isAutoPlaying; round++) {
+                    console.log(`\n=== ROUND ${round + 1} ===`);
+                    
+                    // Each player takes a turn
+                    for (let playerIndex = 0; playerIndex < this.players.length && this.isAutoPlaying; playerIndex++) {
+                        const player = this.players[playerIndex];
+                        console.log(`\n--- ${player.name}'s turn ---`);
+                        
+                        this.setActivePlayer(player);
+                        await this.playPlayerTurn(player);
+                        
+                        // Short delay between players
+                        await this.delay(800);
+                    }
+                    
+                    // Longer delay between rounds
+                    await this.delay(1500);
+                }
+                
+                if (this.isAutoPlaying) {
+                    this.stopAutoPlay();
+                    this.showFinalMultiPlayerResults();
+                }
+            }
+
+            async playPlayerTurn(player) {
+                const availableCategories = this.getAvailableCategories(player);
+                if (availableCategories.length === 0) {
+                    console.log(`${player.name} has completed all categories`);
+                    return;
+                }
+                
+                // Reset turn state
+                this.resetTurn();
+                
+                // Play up to 3 turns for this player
+                for (let turn = 1; turn <= 3 && this.isAutoPlaying; turn++) {
+                    console.log(`${player.name} - turn ${turn}`);
+                    
+                    // Roll dice
+                    await this.autoRollDice();
+                    
+                    // Wait to see the result
+                    await this.delay(1000);
+                    
+                    if (turn < 3) {
+                        // AI decides what to hold (use LLM for LLM players)
+                        let holdDecision;
+                        if (player.strategy.startsWith('llm-') && this.useLLM) {
+                            console.log(`${player.name} thinking with ChatGPT...`);
+                            holdDecision = await this.llmDecideHold(player);
+                        } else {
+                            holdDecision = this.autoPlayDecideHold(player);
+                            // Show traditional AI reasoning
+                            this.showAIReasoning(player, `🎪 Traditional AI Hold Decision (Turn ${this.turn})`, 
+                                "Using rule-based AI strategy for dice holding");
+                        }
+                        
+                        this.heldDice = holdDecision;
+                        this.updateDisplay();
+                        
+                        // Show what AI is holding
+                        await this.delay(1200);
+                    }
+                }
+                
+                // Choose category and score (use LLM for LLM players)
+                let choice;
+                if (player.strategy.startsWith('llm-') && this.useLLM) {
+                    console.log(`${player.name} choosing category with ChatGPT...`);
+                    choice = await this.llmChooseCategory(player);
+                } else {
+                    choice = this.autoPlayChooseCategory(player);
+                    // Show traditional AI reasoning
+                    this.showAIReasoning(player, `🎪 Traditional AI Category Selection: ${choice.category} (${choice.score} pts)`, 
+                        "Used rule-based AI to select highest scoring available category");
+                }
+                console.log(`${player.name} chooses ${choice.category} for ${choice.score} points`);
+                
+                // Fill scorecard for this player
+                this.fillScorecard(player, choice.category, choice.score);
+                
+                await this.delay(800);
+            }
+
+            showFinalMultiPlayerResults() {
+                console.log('\n=== FINAL RESULTS ===');
+                const results = this.players.map(player => {
+                    const totalScore = this.calculatePlayerTotalScore(player);
+                    console.log(`${player.name}: ${totalScore} points`);
+                    return { player, totalScore };
+                }).sort((a, b) => b.totalScore - a.totalScore);
+                
+                const winner = results[0];
+                console.log(`🏆 WINNER: ${winner.player.name} with ${winner.totalScore} points!`);
+                
+                // Show results in UI
+                alert(`🏆 Game Complete!\n\nWINNER: ${winner.player.name} (${winner.totalScore} points)\n\n` +
+                      results.map((r, i) => `${i + 1}. ${r.player.name}: ${r.totalScore} points`).join('\n'));
+            }
+
+            calculatePlayerTotalScore(player) {
+                const upperCategories = ['ones', 'twos', 'threes', 'fours', 'fives', 'sixes'];
+                let upperTotal = 0;
+                
+                upperCategories.forEach(category => {
+                    if (player.scorecard[category] !== undefined) {
+                        upperTotal += player.scorecard[category];
+                    }
+                });
+                
+                // Upper section bonus
+                const bonus = upperTotal >= 63 ? 35 : 0;
+                
+                // Calculate total score
+                let totalScore = upperTotal + bonus;
+                const lowerCategories = ['three-of-a-kind', 'four-of-a-kind', 'full-house', 
+                                       'small-straight', 'large-straight', 'yahtzee', 'chance'];
+                
+                lowerCategories.forEach(category => {
+                    if (player.scorecard[category] !== undefined) {
+                        totalScore += player.scorecard[category];
+                    }
+                });
+                
+                return totalScore;
+            }
+
+            async startAutoPlay() {
+                // Start multi-player mode instead
+                await this.startMultiPlayerAutoPlay();
+            }
+
+            async playAutoRound() {
+                console.log(`Starting auto-play round ${this.currentRound + 1}`);
+                
+                // Highlight current turn in scorecard
+                document.querySelectorAll('tr[data-category]').forEach(row => {
+                    row.classList.remove('current-turn');
+                });
+                
+                this.resetTurn();
+                
+                // Play up to 3 turns
+                for (let turn = 1; turn <= 3 && this.isAutoPlaying; turn++) {
+                    console.log(`Auto-play turn ${turn}`);
+                    
+                    // Roll dice
+                    await this.autoRollDice();
+                    
+                    // Wait to see the result
+                    await this.delay(1000);
+                    
+                    if (turn < 3) {
+                        // AI decides what to hold
+                        const holdDecision = this.autoPlayDecideHold();
+                        this.heldDice = holdDecision;
+                        this.updateDisplay();
+                        
+                        // Show what AI is holding
+                        await this.delay(1500);
+                    }
+                }
+                
+                // Choose category and score
+                const choice = this.autoPlayChooseCategory();
+                console.log(`AI chooses ${choice.category} for ${choice.score} points`);
+                
+                // Highlight the chosen category
+                const categoryRow = document.querySelector(`tr[data-category="${choice.category}"]`);
+                categoryRow.classList.add('current-turn');
+                
+                await this.delay(1000);
+                
+                this.fillScorecard(choice.category, choice.score);
+                categoryRow.classList.remove('current-turn');
+                
+                await this.delay(1500);
+            }
+
+            async autoRollDice() {
+                return new Promise((resolve) => {
+                    // Use the existing roll dice logic but return a promise
+                    this.rollDice();
+                    
+                    // Wait for the longest possible dice animation
+                    setTimeout(resolve, 3500);
+                });
+            }
+
+            stopAutoPlay() {
+                this.isAutoPlaying = false;
+                const autoPlayBtn = document.getElementById('auto-play-btn');
+                autoPlayBtn.textContent = '🧠 GPT-4 vs AI Battle';
+                autoPlayBtn.onclick = () => this.startAutoPlay();
+            }
+
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            resetTurn() {
+                this.turn = 0;
+                this.heldDice = [false, false, false, false, false];
+                this.suggestedDice = [false, false, false, false, false];
+                this.dice = [0, 0, 0, 0, 0];
+                this.gameStarted = true;
+            }
+
             updateDisplay() {
                 // Generate suggestions first if we have dice rolled
                 let suggestion = "";
@@ -745,6 +2473,8 @@
                 this.suggestedDice = [false, false, false, false, false];
                 this.turn = 0;
                 this.gameStarted = true;
+                this.scorecard = {};
+                this.currentRound = 0;
                 
                 // Reset dice display
                 for (let i = 0; i < 5; i++) {
@@ -752,6 +2482,20 @@
                     dieElement.textContent = '?';
                     dieElement.classList.remove('held', 'suggested', 'rolling', 'shake');
                 }
+                
+                // Reset scorecard display
+                const allCategories = ['ones', 'twos', 'threes', 'fours', 'fives', 'sixes',
+                                     'three-of-a-kind', 'four-of-a-kind', 'full-house',
+                                     'small-straight', 'large-straight', 'yahtzee', 'chance'];
+                
+                allCategories.forEach(category => {
+                    document.getElementById(`score-${category}`).textContent = '-';
+                    document.querySelector(`tr[data-category="${category}"]`).classList.remove('filled', 'current-turn');
+                });
+                
+                document.getElementById('upper-subtotal').textContent = '0';
+                document.getElementById('upper-bonus').textContent = '0';
+                document.getElementById('total-score').textContent = '0';
                 
                 // Hide final result and hints
                 document.getElementById('final-result').style.display = 'none';
@@ -771,6 +2515,10 @@
 
         function newGame() {
             game.newGame();
+        }
+
+        function startAutoPlay() {
+            game.startAutoPlay();
         }
 
 
